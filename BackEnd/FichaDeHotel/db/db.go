@@ -1,72 +1,53 @@
 package db
 
 import (
-	hotelClient "HotelArquiSoft2/BackEnd/FichaDeHotel/clients/hotel"
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/model"
-	"fmt"
-	"os"
-
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	log "github.com/sirupsen/logrus"
+	"HotelArquiSoft2/BackEnd/FichaDeHotel/clients/hotel"
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 )
 
-var (
-	db  *gorm.DB
-	err error
-)
-
-func generateFilename(number int) string {
-	// Base directory and filename template
-	baseDirectory := "imagenes/"
-	baseFilename := "%d.jpg"
-
-	// Format the filename with the given number
-	filename := fmt.Sprintf(baseFilename, number)
-
-	// Concatenate the directory and filename
-	fullPath := baseDirectory + filename
-
-	return fullPath
-}
-
-func readImageAsBlob(filepath string) ([]byte, error) {
-	// Read the image file
-	imageData, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	return imageData, nil
-}
+var db *mongo.Database
 
 func init() {
-	// DB Connections Paramters
+	// DB Connection Parameters
 	DBName := "pruebaHash"
-	DBUser := "root"
-	DBPass := "arquisoft1"
-	//DBPass := os.Getenv("MVC_DB_PASS")
-	DBHost := "db"
-	// ------------------------
+	DBHost := "localhost"
+	DBPort := "27017"
 
-	db, err = gorm.Open("mysql", DBUser+":"+DBPass+"@tcp("+DBHost+":8090)/"+DBName+"?charset=utf8&parseTime=True")
+	clientOptions := options.Client().ApplyURI("mongodb://" + DBHost + ":" + DBPort)
+	client, err := mongo.Connect(context.Background(), clientOptions)
 
 	if err != nil {
-		log.Info("Connection Failed to Open")
-		log.Fatal(err)
-	} else {
-		log.Info("Connection Established")
+		log.Fatal("Failed to connect to MongoDB: ", err)
 	}
 
-	// We need to add all CLients that we build
-	hotelClient.Db = db
+	err = client.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		log.Fatal("Failed to ping the MongoDB server: ", err)
+	}
 
+	db = client.Database(DBName)
+
+	// Set up the database for the hotel client
+	hotel.Db = db
 }
 
 func StartDbEngine() {
-	// We need to migrate all classes model.
+	// We need to create or migrate collections
+	hotelsCollection := db.Collection("hotels")
 
-	db.AutoMigrate(&model.Hotels{})
+	// Define any indexes if needed
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{{"_id", 1}}, // Index on "_id" in ascending order
+	}
+	_, err := hotelsCollection.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		log.Fatal("Failed to create an index: ", err)
+	}
 
-	log.Info("Finishing Migration Database Tables")
+	log.Println("Finished Creating/Migrating Collections")
 }

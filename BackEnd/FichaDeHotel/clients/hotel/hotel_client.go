@@ -2,39 +2,68 @@ package hotel
 
 import (
 	"HotelArquiSoft2/BackEnd/FichaDeHotel/model"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
+	"context"
 )
 
-var Db *gorm.DB
+var Db *mongo.Database
 
-func GetHotelById(id int) model.Hotel {
+func GetHotelById(id string) (model.Hotel, error) {
 	var hotel model.Hotel
-
-	Db.Where("id = ?", id).First(&hotel)
-	log.Debug("Hotel: ", hotel)
-
-	return hotel
-}
-
-func GetHotels() model.Hotels {
-	var hotels model.Hotels
-	Db.Find(&hotels)
-	log.Debug("Hotels: ", hotels)
-	return hotels
-
-}
-
-func InsertHotel(hotel model.Hotel) model.Hotel {
-	result := Db.Create(&hotel)
-
-	if result.Error != nil {
-
-		//TODO Manage Errors
-
-		log.Error("")
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		fmt.Println(err)
+		return hotel, err
 	}
-	log.Debug("Hotel Created: ", hotel.ID)
-	return hotel
+	err = Db.Collection("hotels").FindOne(context.TODO(), bson.D{{"_id", objID}}).Decode(&hotel)
+	if err != nil {
+		fmt.Println(err)
+		return hotel, nil
+	} else {
+		return hotel, err
+	}
+}
+func InsertHotel(hotel model.Hotel) (model.Hotel, error) {
+	hotel.ID = primitive.NewObjectID()
+	_, err := Db.Collection("hotels").InsertOne(context.TODO(), &hotel)
+
+	if err != nil {
+		fmt.Println(err)
+		return hotel, nil
+	} else {
+		return hotel, err
+	}
+}
+
+func UpdateHotel(hotel model.Hotel) (model.Hotel, error) {
+
+	filter := bson.M{"_id": hotel.ID}
+
+	// Create an empty update operation
+	update := bson.M{}
+
+	// Check each field in updatedHotel and add it to the update operation if it's not null or empty
+	if hotel.Nombre != "" {
+		update["Nombre"] = hotel.Nombre
+	}
+
+	if hotel.CantHab > 0 {
+		update["CantHab"] = hotel.CantHab
+	}
+
+	if hotel.Descripcion != "" {
+		update["Descripcion"] = hotel.Descripcion
+	}
+
+	_, err := Db.Collection("hotels").UpdateOne(context.TODO(), filter, bson.M{"$set": update})
+	if err != nil {
+		return hotel, nil
+	} else {
+		return hotel, err
+	}
+
 }
