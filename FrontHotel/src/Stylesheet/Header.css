@@ -1,0 +1,9 @@
+.header {
+  text-align: center;
+  background-color: red;
+  color: white;
+  padding: 10px;
+  top: 0; /* Agregado */
+  left: 0; /* Agregado */
+  right: 0; /* Agregado */
+}
