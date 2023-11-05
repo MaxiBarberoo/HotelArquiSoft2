@@ -22,7 +22,6 @@ function HotelesR(props) {
             <h3 className="nombre-hotel1">
                 {props.nombreHotel}
             </h3>
-            <p className="cantidad-piezas">Habitaciones: {props.piezas}</p>
             <p className="descripcion-hotel">
                 Descripción: {props.descripcion}
             </p>

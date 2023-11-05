@@ -11,9 +11,7 @@ function Home() {
   const [fechaDesde, setFechaDesde] = useState(null);
   const [fechaHasta, setFechaHasta] = useState(null);
   const [ciudad, setCiudad] = useState(null);
-  const [amenities, setAmenities] = useState([]);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
-  const token = null;
 
   const handleFechaDesdeChange = (date) => {
     setFechaDesde(date);
@@ -30,18 +28,35 @@ function Home() {
 
   const buscarHotelesDisponibles = (event) => {
     event.preventDefault();
-    if (!fechaDesde && !fechaHasta && !ciudad) {
-      alert("Al menos debes completar los campos de fecha o de ciudad.");
-    } else if (!fechaDesde || !fechaHasta) {
-      alert("Debes completar los campos de fecha desde y fecha hasta.");
-    } else if (fechaDesde >= fechaHasta) {
-      alert("La fecha desde debe ser anterior a la fecha hasta.");
-    } else if (fechaDesde && fechaHasta && !ciudad) {
+    if (!fechaDesde || !fechaHasta || !ciudad) {
+      alert("Debes completar los campos de fecha y de ciudad.");
+    } else {
+      // Define la URL y los parámetros de la solicitud
+      const url = 'http://localhost:8090/hotels'; 
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ciudad: ciudad,
+          fecha_ingreso: fechaDesde,
+          fecha_egreso: fechaHasta
+        })
+      };
 
-    } else if (!fechaDesde && !fechaHasta && ciudad) {
-
-    } else if (fechaDesde && fechaHasta && ciudad) {
-
+      // Realiza la solicitud
+      fetch(url, requestOptions)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Respuesta no válida desde el servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          setHotelesDisponibles(data);
+        })
+        .catch(error => {
+          console.error('Hubo un problema con la solicitud fetch:', error);
+        });
     }
   };
 
@@ -98,13 +113,10 @@ function Home() {
                 <HotelesR
                   key={hotel.id}
                   hotelId={hotel.id}
-                  piezas={hotel.cantHabitaciones}
                   descripcion={hotel.descripcion}
-                  amenities={hotel.amenities}
                   nombreHotel={hotel.name}
                   fechaDesde={fechaDesde}
                   fechaHasta={fechaHasta}
-                  token={token}
                 />
               </div>
             ))
