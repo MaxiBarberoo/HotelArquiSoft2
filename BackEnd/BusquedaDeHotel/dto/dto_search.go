@@ -1,0 +1,11 @@
+package dto
+
+import "time"
+
+type SearchDto struct {
+	Ciudad       string    `json:"ciudad"`
+	FechaIngreso time.Time `json:"fecha_ingreso"`
+	FechaEgreso  time.Time `json:"fecha_egreso"`
+}
+
+type SearchDtos []SearchDto

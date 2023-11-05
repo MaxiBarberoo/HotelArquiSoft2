@@ -75,8 +75,12 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
+github.com/rtt/Go-Solr v0.0.0-20190512221613-64fac99dcae2 h1:CYVr4iW4FURmP0OsiAu/X7dKniuf8jVX/Z76bNY8jlA=
+github.com/rtt/Go-Solr v0.0.0-20190512221613-64fac99dcae2/go.mod h1:9E3228s3UIv8t8fiQL6XNj0Gsldbk88n/AVMaRnkk5Q=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/stevenferrer/solr-go v0.3.3 h1:nxJlyaoQqKRC1yb/8CptqYMZE1gH1ayVJWnqTRFK8/E=
+github.com/stevenferrer/solr-go v0.3.3/go.mod h1:CadDkCo0lnX8RiHM8jsuGJz+WqUkr0igDSgPLR3CEdU=
 github.com/streadway/amqp v1.1.0 h1:py12iX8XSyI7aN/3dUT8DFIDJazNJsVJdxNVEpnQTZM=
 github.com/streadway/amqp v1.1.0/go.mod h1:WYSrTEYHOXHd0nwFeUXAe2G2hRnQT+deZJJf88uS9Bg=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

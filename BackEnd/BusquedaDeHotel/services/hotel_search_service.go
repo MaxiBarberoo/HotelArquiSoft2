@@ -2,84 +2,100 @@ package services
 
 import (
 	e "HotelArquiSoft2/BackEnd/BusquedaDeHotel/Utils"
-	hotelClient "HotelArquiSoft2/BackEnd/BusquedaDeHotel/clients/HotelSearch"
+	hotelSearchClient "HotelArquiSoft2/BackEnd/BusquedaDeHotel/clients/HotelSearch"
 	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
-	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 )
 
-type hotelService struct{}
+type hotelSearchService struct{}
 
-type hotelServiceInterface interface {
-	GetHotelById(id string) (dto.HotelDto, e.ApiError)
-	InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiError)
-	UpdateHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiError)
+type hotelSearchServiceInterface interface {
+	GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
+	UpdateHotel(hotelId string) e.ApiError
 }
 
 var (
-	HotelService hotelServiceInterface
+	HotelSearchService hotelSearchServiceInterface
 )
 
 func init() {
-	HotelService = &hotelService{}
+	HotelSearchService = &hotelSearchService{}
 }
 
-func (s *hotelService) GetHotelById(id string) (dto.HotelDto, e.ApiError) {
+func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError) {
 
-	var hotel, err = hotelClient.GetHotelById(id)
+	var hotelsByCity, err = hotelSearchClient.GetHotelsByDateAndCity(searchDto)
 	if err != nil {
-		var errorHotel dto.HotelDto
+		var errorHotel dto.HotelsDto
 		return errorHotel, e.NewBadRequestApiError("Hotel not found")
 	}
-	var hotelDto dto.HotelDto
 
-	if hotel.ID.Hex() == "000000000000000000000000" {
-		return hotelDto, e.NewBadRequestApiError("hotel not found")
+	for i := 0; i < len(hotelsByCity); i++ {
+		url := fmt.Sprintf("http://localhost:8095/getavailabilitybyid/%s", hotelsByCity[i].Id)
+		resp, err := http.Get(url)
+		if err != nil {
+			return nil, e.NewBadRequestApiError("Error al llamar al microservicio de ficha de hotel")
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, e.NewBadRequestApiError("Error con la respuesta obtenida")
+		}
+
+		var result map[string]interface{}
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			return nil, e.NewBadRequestApiError("Error al extraer el json")
+		}
+
+		availability, ok := result["availability"].(bool)
+		if !ok {
+			return nil, e.NewBadRequestApiError("Availability no es una cadena o no existe en el JSON")
+		}
+
+		hotelsByCity[i].Availability = availability
+
 	}
 
-	hotelDto.Name = hotel.Nombre
-	hotelDto.CantHabitaciones = hotel.CantHab
-	hotelDto.Id = hotel.ID.Hex()
-	hotelDto.Desc = hotel.Descripcion
+	var availableHotels dto.HotelsDto
+	for i := 0; i < len(hotelsByCity); i++ {
+		if hotelsByCity[i].Availability == true {
+			availableHotels = append(availableHotels, hotelsByCity[i])
+		}
+	}
 
-	return hotelDto, nil
+	return availableHotels, nil
 }
 
-func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiError) {
+func (s *hotelSearchService) UpdateHotel(hotelId string) e.ApiError {
 
-	var hotel model.Hotel
-	var err error
-	hotel.Nombre = hotelDto.Name
-	hotel.CantHab = hotelDto.CantHabitaciones
-	hotel.Descripcion = hotelDto.Desc
-	hotel, err = hotelClient.InsertHotel(hotel)
+	url := fmt.Sprintf("http://localhost:8090/hotels/%s", hotelId)
+
+	resp, err := http.Get(url)
 	if err != nil {
-		var errorHotel dto.HotelDto
-		return errorHotel, e.NewBadRequestApiError("Hotel could not be inserted")
+		return e.NewBadRequestApiError("Error al llamar al microservicio de ficha de hotel")
 	}
-	hotelDto.Id = hotel.ID.Hex()
+	defer resp.Body.Close()
 
-	return hotelDto, nil
-}
-
-func (s *hotelService) UpdateHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiError) {
-	var hotel model.Hotel
-
-	var ID, err = primitive.ObjectIDFromHex(hotelDto.Id)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return hotelDto, e.NewBadRequestApiError("hotel not found")
+		return e.NewBadRequestApiError("Error con la respuesta obtenida")
 	}
 
-	hotel.Nombre = hotelDto.Name
-	hotel.CantHab = hotelDto.CantHabitaciones
-	hotel.Descripcion = hotelDto.Desc
-	hotel.ID = ID
-	hotel, err = hotelClient.UpdateHotel(hotel)
+	var hotel dto.HotelDto
+	err = json.Unmarshal(body, &hotel)
 	if err != nil {
-		var errorHotel dto.HotelDto
-		return errorHotel, e.NewBadRequestApiError("Hotel not found")
+		return e.NewBadRequestApiError("Error al extraer el json")
 	}
-	hotelDto.Id = hotel.ID.Hex()
 
-	return hotelDto, nil
+	errSolr := hotelSearchClient.UpdateHotel(hotel)
+	if err != nil {
+		return errSolr
+	}
+
+	return nil
 }

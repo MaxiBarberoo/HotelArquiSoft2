@@ -3,13 +3,11 @@ package HotelSearch
 import (
 	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
 	service "HotelArquiSoft2/BackEnd/BusquedaDeHotel/services"
-	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
-
 	"github.com/streadway/amqp"
+	"net/http"
 )
 
 func failOnError(err error, msg string) {
@@ -18,7 +16,7 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func SendToQueue(hotelId string) {
+func Consumer() {
 	conn, err := amqp.Dial("amqp://user:password@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -37,74 +35,45 @@ func SendToQueue(hotelId string) {
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	print(ctx)
-	defer cancel()
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
 
-	body := hotelId
-	err = ch.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
-}
+	for d := range msgs {
+		hotelId := string(d.Body)
 
-func GetHotelById(c *gin.Context) {
-	log.Debug("Hotel id to load: " + c.Param("id"))
+		// Update hotel
+		errorSolr := service.HotelSearchService.UpdateHotel(hotelId)
+		if errorSolr != nil {
+			fmt.Println(errorSolr)
+		}
 
-	id := c.Param("id")
-	var hotelDto dto.HotelDto
-
-	hotelDto, err := service.HotelService.GetHotelById(id)
-
-	if err != nil {
-		c.JSON(err.Status(), err)
-		return
+		log.Printf("Received a message with ID: %d", hotelId)
+		// Llamado a actualizar hotel en solr
+		// si llaman metodo gethotelbyId o getHotels ahi llamo
+		// a API de disponibilidad de hoteles para agregar atributo de disponibilidad
 	}
-
-	c.JSON(http.StatusOK, hotelDto)
 }
 
-func HotelInsert(c *gin.Context) {
-	var hotelDto dto.HotelDto
+func GetHotelsByDateAndCity(c *gin.Context) {
+	var hotelsDto dto.HotelsDto
 
-	err := c.BindJSON(&hotelDto)
+	var searchDto dto.SearchDto
+
+	err := c.BindJSON(&searchDto)
+
 	if err != nil {
 		log.Error(err.Error())
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-
-	hotelDto, er := service.HotelService.InsertHotel(hotelDto)
-	// Error del Insert
-	if er != nil {
-		c.JSON(er.Status(), er)
-		return
-	}
-	SendToQueue(hotelDto.Id)
-}
-
-func UpdateHotel(c *gin.Context) {
-	var hotelDto dto.HotelDto
-
-	err := c.BindJSON(&hotelDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	hotelDto, er := service.HotelService.UpdateHotel(hotelDto)
-	// Error del Insert
-	if er != nil {
-		c.JSON(er.Status(), er)
-		return
-	}
-	SendToQueue(hotelDto.Id)
+	hotelsDto, err = service.HotelSearchService.GetHotelsByDateAndCity(searchDto)
+	c.JSON(http.StatusOK, hotelsDto)
 }

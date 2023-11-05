@@ -2,10 +2,10 @@ package main
 
 import (
 	app "HotelArquiSoft2/BackEnd/BusquedaDeHotel/app"
-	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/db"
+	controller "HotelArquiSoft2/BackEnd/BusquedaDeHotel/controller/HotelSearch"
 )
 
 func main() {
-	db.StartDbEngine()
+	controller.Consumer()
 	app.StartRoute()
 }
