@@ -1,14 +1,16 @@
-.contenedor-de-hoteles{
-  display: content;
+.contenedor-hoteles-r {
+  height: auto;
+  position: relative;
+  display: contents;
 }
 
-.contenedor-boton-redireccion {
+.contenedor-buscar {
     text-align: center;
     margin-top: 20px;
     margin-bottom: 20px; /* Agregado para separar del siguiente elemento */
   }
   
-  .boton-redireccion {
+  .boton-buscar {
     border-radius: 20px;
     border: 1px solid #FF4B2B;
     background-color: #FF4B2B;
@@ -21,20 +23,20 @@
     transition: transform 80ms ease-in;
   }
   
-  .boton-redireccion:active {
+  .boton-buscar:active {
     transform: scale(0.95);
   }
   
-  .boton-redireccion:focus {
+  .boton-buscar:focus {
     outline: none;
   }
   
-  .boton-redireccion.ghost {
+  .boton-buscar.ghost {
     background-color: transparent;
     border-color: #FFFFFF;
   }
   
-  .boton-redireccion:hover {
+  .boton-buscar:hover {
     background-color: #7f1818;
     color: #ffffffd8;
   }

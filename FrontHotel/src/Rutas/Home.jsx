@@ -1,109 +1,114 @@
 import React, { useState, useEffect } from "react";
 import { json, useNavigate } from "react-router-dom";
 import Header from "../Componentes/Header";
-import Hoteles from "../Componentes/Hoteles";
+import HotelesR from '../Componentes/HotelesR'
+import DatePicker from "react-datepicker"
+import 'react-datepicker/dist/react-datepicker.css'
 import "../Stylesheet/Home.css";
 
 function Home() {
-  const [hoteles, setHoteles] = useState([]);
+  const [hotelesDisponibles, setHotelesDisponibles] = useState([]);
+  const [fechaDesde, setFechaDesde] = useState(null);
+  const [fechaHasta, setFechaHasta] = useState(null);
+  const [ciudad, setCiudad] = useState(null);
   const [amenities, setAmenities] = useState([]);
-  const navigate = useNavigate();
+  const [busquedaRealizada, setBusquedaRealizada] = useState(false);
+  const token = null;
 
-  const handleRedirectSubmit = (event) => {
-    navigate('/loginandregister');
+  const handleFechaDesdeChange = (date) => {
+    setFechaDesde(date);
+  };
+
+  const handleFechaHastaChange = (date) => {
+    setFechaHasta(date);
+  };
+
+  const handleCiudadChange = (ciudad) => {
+    setCiudad(ciudad);
   }
 
-  useEffect(() => {
-    const fetchImagenes = async (hotelId) => {
-      try {
-        const response = await fetch(`http://localhost:8090/imagenes/${hotelId}`);
-        if (response.ok) {
-          const imagenesData = await response.json();
-          if (Array.isArray(imagenesData)) {
-            const imagenesURLs = await Promise.all(imagenesData.map(async (imagen) => {
-              if (imagen && imagen.contenido) {
-                const blobData = new Blob([imagen.contenido], { type: 'image/jpeg' });
-                return URL.createObjectURL(blobData);
-              }
-              return null;
-            }));
-            return imagenesURLs.filter((url) => url !== null);
-          } else {
-            throw new Error(`Error en el formato de las imágenes del hotel ${hotelId}`);
-          }
-        } else {
-          throw new Error(`Error en la petición GET de las imágenes del hotel ${hotelId}`);
-        }
-      } catch (error) {
-        console.error(error);
-        return [];
-      }
-    };
 
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:8090/hotels');
-        if (response.ok) {
-          const data = await response.json();
-          const hotelesConImagenes = await Promise.all(data.map(async (hotel) => {
-            const imagenesURLs = await fetchImagenes(hotel.id);
-            return { ...hotel, imagenesURLs };
-          }));
-          setHoteles(hotelesConImagenes);
-        } else {
-          throw new Error('Error en la petición GET de hoteles');
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchData();
-  }, []);
+  const buscarHotelesDisponibles = () => {
+    if (!fechaDesde || !fechaHasta) {
+      alert("Debes completar los campos de fecha desde y fecha hasta.");
+    } else if (fechaDesde >= fechaHasta) {
+      alert("La fecha desde debe ser anterior a la fecha hasta.");
+    } else if (!fechaDesde && !fechaHasta && !ciudad) {
+      alert("Al menos debes completar los campos de fecha o de ciudad.");
+    } else if (fechaDesde && fechaHasta && !ciudad) {
 
+    } else if (!fechaDesde && !fechaHasta && ciudad) {
 
-  useEffect(() => {
+    } else if (fechaDesde && fechaHasta && ciudad) {
+
+    }
+  };
+
+  /*useEffect(() => {
     const fetchAmenitiesForHotels = async () => {
       const hotelsWithAmenities = await Promise.all(
-          amenities.map(async (amenitie) => {
-            const response = await fetch(`http://localhost:8090/amenities/${amenitie.id}`);
-            if (response.ok) {
-              const amenitiesData = await response.json();
-              return { ...amenitie, amenities: amenitiesData };
-            } else {
-              console.error(`Error en la petición GET de amenities para el hotel ${hotel.id}`);
-              return amenitie;
-            }
-          })
+        amenities.map(async (amenitie) => {
+          const response = await fetch(`http://localhost:8090/amenities/${amenitie.id}`);
+          if (response.ok) {
+            const amenitiesData = await response.json();
+            return { ...amenitie, amenities: amenitiesData };
+          } else {
+            console.error(`Error en la petición GET de amenities para el hotel ${hotel.id}`);
+            return amenitie;
+          }
+        })
       );
       setHoteles(hotelsWithAmenities);
     };
-
+  
     if (amenities.length > 0) {
       fetchAmenitiesForHotels();
     }
-  }, [hoteles]);
-
-
+  }, [hotelesDisponibles]);*/
 
   return (
     <div>
       <Header />
-      <form onSubmit={handleRedirectSubmit} className="contenedor-boton-redireccion">
-        <button type="submit" className="boton-redireccion">INICIA SESION PARA RESERVAR TU HOTEL</button>
+      <div className="contenedor-criterios">
+        <h2>Ingrese las fechas para su estadia:</h2>
+        <div className="fecha-desde">
+          <p>Desde: </p>
+          <DatePicker selected={fechaDesde} onChange={handleFechaDesdeChange} />
+        </div>
+        <div className="fecha-hasta">
+          <p>Hasta: </p>
+          <DatePicker selected={fechaHasta} onChange={handleFechaHastaChange} />
+        </div>
+        <div className="nombre-ciudad">
+          <p>Ciudad: </p>
+          <input type="text" placeholder="Ciudad..." onChange={handleCiudadChange}></input>
+        </div>
+      </div>
+      <form className="contenedor-buscar" onSubmit={buscarHotelesDisponibles}>
+        <button className="boton-buscar">Buscar</button>
       </form>
-      <h2>Hoteles disponibles:</h2>
-      <div className="contenedor-de-hoteles">
-        {hoteles.map((hotel) => (
-            <Hoteles
-                key={hotel.id}
-                hotelId={hotel.id}
-                imagenesURLs={hotel.imagenesURLs}
-                nombreHotel={hotel.name}
-                piezas={hotel.cantHabitaciones}
-                descripcion={hotel.descripcion}
-                amenities={hotel.amenities}
-            />
-        ))}
+      <div className="contenedor-hoteles-r">
+        {busquedaRealizada ? (
+          hotelesDisponibles.length ? (
+            hotelesDisponibles.map((hotel) => (
+              <div key={hotel.id}>
+                <HotelesR
+                  key={hotel.id}
+                  hotelId={hotel.id}
+                  piezas={hotel.cantHabitaciones}
+                  descripcion={hotel.descripcion}
+                  amenities={hotel.amenities}
+                  nombreHotel={hotel.name}
+                  fechaDesde={fechaDesde}
+                  fechaHasta={fechaHasta}
+                  token={token}
+                />
+              </div>
+            ))
+          ) : (
+            <p>No hay hoteles disponibles en esas fechas.</p>
+          )
+        ) : null}
       </div>
     </div>
   );
