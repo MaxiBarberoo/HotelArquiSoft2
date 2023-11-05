@@ -18,7 +18,7 @@ func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
 	// build an update document, in this case adding two documents
 	f := map[string]interface{}{
 		"add": []interface{}{
-			map[string]interface{}{"hotel_id": hotelDto.Id, "name": hotelDto.Name, "ciudad": hotelDto.Ciudad, "cantHabitaciones": hotelDto.CantHabitaciones, "descripcion": hotelDto.Desc},
+			map[string]interface{}{"hotel_id": hotelDto.Id, "name": hotelDto.Name, "ciudad": hotelDto.Ciudad, "cantHabitaciones": hotelDto.CantHabitaciones, "descripcion": hotelDto.Desc, "amenities": hotelDto.Amenities},
 		},
 	}
 
@@ -47,7 +47,7 @@ func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
 	q := solr.Query{
 		Params: solr.URLParamMap{
 			"q":           []string{"ciudad:" + searchDto.Ciudad},
-			"facet.field": []string{"id", "name", "cantHabitaciones", "descripcion"},
+			"facet.field": []string{"id", "name", "cantHabitaciones", "descripcion", "amenities"},
 			"facet":       []string{"true"},
 		},
 		Rows: 100000,
@@ -102,6 +102,15 @@ func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
 		hotelsByCity[i].Desc = hotelDesc
+
+		hotelAmenitiesInterface := results.Get(i).Field("amenities")
+		hotelAmenities, ok := hotelAmenitiesInterface.([]string)
+		if !ok {
+			// handle the error; this means that the "id" field is not a string
+			fmt.Println("Descripcion is not a string array!")
+			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
+		}
+		hotelsByCity[i].Amenities = hotelAmenities
 
 		hotelsByCity[i].Ciudad = searchDto.Ciudad
 	}

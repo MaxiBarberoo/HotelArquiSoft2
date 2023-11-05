@@ -27,6 +27,7 @@ func GetHotelById(id string) (model.Hotel, error) {
 		return hotel, err
 	}
 }
+
 func InsertHotel(hotel model.Hotel) (model.Hotel, error) {
 	hotel.ID = primitive.NewObjectID()
 	_, err := Db.Collection("hotels").InsertOne(context.TODO(), &hotel)
@@ -48,22 +49,29 @@ func UpdateHotel(hotel model.Hotel) (model.Hotel, error) {
 
 	// Check each field in updatedHotel and add it to the update operation if it's not null or empty
 	if hotel.Nombre != "" {
-		update["Nombre"] = hotel.Nombre
+		update["nombre"] = hotel.Nombre
 	}
 
 	if hotel.CantHab > 0 {
-		update["CantHab"] = hotel.CantHab
+		update["cantHab"] = hotel.CantHab
 	}
 
 	if hotel.Descripcion != "" {
-		update["Descripcion"] = hotel.Descripcion
+		update["descripcion"] = hotel.Descripcion
+	}
+
+	if len(hotel.Amenities) > 0 {
+		update["amenities"] = hotel.Amenities
+	}
+
+	if hotel.Ciudad != "" {
+		update["ciudad"] = hotel.Ciudad
 	}
 
 	_, err := Db.Collection("hotels").UpdateOne(context.TODO(), filter, bson.M{"$set": update})
 	if err != nil {
-		return hotel, nil
-	} else {
 		return hotel, err
+	} else {
+		return hotel, nil
 	}
-
 }

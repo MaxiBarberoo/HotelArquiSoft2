@@ -41,6 +41,8 @@ func (s *hotelService) GetHotelById(id string) (dto.HotelDto, e.ApiError) {
 	hotelDto.CantHabitaciones = hotel.CantHab
 	hotelDto.Id = hotel.ID.Hex()
 	hotelDto.Desc = hotel.Descripcion
+	hotelDto.Amenities = hotel.Amenities
+	hotelDto.Ciudad = hotel.Ciudad
 
 	return hotelDto, nil
 }
@@ -52,6 +54,9 @@ func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 	hotel.Nombre = hotelDto.Name
 	hotel.CantHab = hotelDto.CantHabitaciones
 	hotel.Descripcion = hotelDto.Desc
+	hotel.Amenities = hotelDto.Amenities
+	hotel.Ciudad = hotelDto.Ciudad
+
 	hotel, err = hotelClient.InsertHotel(hotel)
 	if err != nil {
 		var errorHotel dto.HotelDto
@@ -74,6 +79,9 @@ func (s *hotelService) UpdateHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 	hotel.CantHab = hotelDto.CantHabitaciones
 	hotel.Descripcion = hotelDto.Desc
 	hotel.ID = ID
+	hotel.Amenities = hotelDto.Amenities
+	hotel.Ciudad = hotelDto.Ciudad
+
 	hotel, err = hotelClient.UpdateHotel(hotel)
 	if err != nil {
 		var errorHotel dto.HotelDto

@@ -7,6 +7,8 @@ type Hotel struct {
 	Nombre      string             `bson:"nombre"`
 	CantHab     int                `bson:"cantHab"`
 	Descripcion string             `bson:"descripcion"`
+	Ciudad      string             `bson:"ciudad"`
+	Amenities   []string           `bson:"amenities"`
 }
 
 type Hotels []Hotel
