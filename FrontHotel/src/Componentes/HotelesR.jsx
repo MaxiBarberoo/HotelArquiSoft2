@@ -3,7 +3,7 @@ import '../Stylesheet/HotelesR.css'
 import { useNavigate } from 'react-router-dom';
 
 function HotelesR(props) {
-    navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleVerDetallesClick = () => {
         navigate(
@@ -19,18 +19,16 @@ function HotelesR(props) {
 
     return (
         <div className="contenedor-hoteles">
-            <p className="nombre-hotel1">
-                <strong>{props.nombreHotel}</strong>
-            </p>
+            <h3 className="nombre-hotel1">
+                {props.nombreHotel}
+            </h3>
             <p className="cantidad-piezas">Habitaciones: {props.piezas}</p>
             <p className="descripcion-hotel">
                 Descripción: {props.descripcion}
             </p>
-            <form onSubmit={checkDisponibilidad} className="boton-reservar">
-                <button onClick={handleVerDetallesClick} className="boton-detalles">Ver detalles</button>
-            </form>
+            <button onClick={handleVerDetallesClick} className="boton-detalles">Ver detalles</button>
         </div>
-    );
+    );    
 }
 
 export default HotelesR;

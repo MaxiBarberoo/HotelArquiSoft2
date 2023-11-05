@@ -1,3 +1,41 @@
+.contenedor-criterios {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.contenedor-fechas {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.fecha-desde, .fecha-hasta, .nombre-ciudad {
+  margin: 10px 0;
+}
+
+.fecha-desde input, .fecha-hasta input, .nombre-ciudad input, .react-datepicker__input-container input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fecha-desde input:focus, .fecha-hasta input:focus, .nombre-ciudad input:focus, .react-datepicker__input-container input:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.fecha-desde p, .fecha-hasta p, .nombre-ciudad p {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
 .contenedor-hoteles-r {
   height: auto;
   position: relative;
@@ -21,22 +59,22 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     transition: transform 80ms ease-in;
-  }
-  
-  .boton-buscar:active {
+}
+
+.boton-buscar:active {
     transform: scale(0.95);
-  }
-  
-  .boton-buscar:focus {
+}
+
+.boton-buscar:focus {
     outline: none;
-  }
-  
-  .boton-buscar.ghost {
+}
+
+.boton-buscar.ghost {
     background-color: transparent;
     border-color: #FFFFFF;
-  }
-  
-  .boton-buscar:hover {
+}
+
+.boton-buscar:hover {
     background-color: #7f1818;
     color: #ffffffd8;
-  }
+}

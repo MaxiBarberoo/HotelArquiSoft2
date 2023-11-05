@@ -1,3 +1,9 @@
+@media (max-width: 768px) {
+  .contenedor-hoteles {
+    width: 80%; /* o 100%, según lo que se vea mejor */
+  }
+}
+
 .contenedor-hoteles {
   background-color: white;
   width: 40%;
@@ -17,7 +23,7 @@
   border-radius: 10px;
 }
 
-.boton-reservar {
+.boton-detalles {
   border-radius: 20px;
   border: 1px solid #FF4B2B;
   background-color: #FF4B2B;
@@ -28,22 +34,19 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   transition: transform 80ms ease-in;
+  margin-top: 10px;  /* Agregado para dar un poco de espacio arriba */
+  cursor: pointer;   /* Agregado para indicar que es un elemento clickeable */
 }
 
-.boton-reservar:active {
+.boton-detalles:active {
   transform: scale(0.95);
 }
 
-.boton-reservar:focus {
+.boton-detalles:focus {
   outline: none;
 }
 
-.boton-reservar.ghost {
-  background-color: transparent;
-  border-color: #FFFFFF;
-}
-
-.boton-reservar:hover {
+.boton-detalles:hover {
   background-color: #7f1818;
   color: #ffffffd8;
 }

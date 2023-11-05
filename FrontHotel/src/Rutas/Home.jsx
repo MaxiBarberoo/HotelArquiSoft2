@@ -23,18 +23,19 @@ function Home() {
     setFechaHasta(date);
   };
 
-  const handleCiudadChange = (ciudad) => {
-    setCiudad(ciudad);
+  const handleCiudadChange = (event) => {
+    setCiudad(event.target.value);
   }
 
 
-  const buscarHotelesDisponibles = () => {
-    if (!fechaDesde || !fechaHasta) {
+  const buscarHotelesDisponibles = (event) => {
+    event.preventDefault();
+    if (!fechaDesde && !fechaHasta && !ciudad) {
+      alert("Al menos debes completar los campos de fecha o de ciudad.");
+    } else if (!fechaDesde || !fechaHasta) {
       alert("Debes completar los campos de fecha desde y fecha hasta.");
     } else if (fechaDesde >= fechaHasta) {
       alert("La fecha desde debe ser anterior a la fecha hasta.");
-    } else if (!fechaDesde && !fechaHasta && !ciudad) {
-      alert("Al menos debes completar los campos de fecha o de ciudad.");
     } else if (fechaDesde && fechaHasta && !ciudad) {
 
     } else if (!fechaDesde && !fechaHasta && ciudad) {
@@ -70,14 +71,16 @@ function Home() {
     <div>
       <Header />
       <div className="contenedor-criterios">
-        <h2>Ingrese las fechas para su estadia:</h2>
-        <div className="fecha-desde">
-          <p>Desde: </p>
-          <DatePicker selected={fechaDesde} onChange={handleFechaDesdeChange} />
-        </div>
-        <div className="fecha-hasta">
-          <p>Hasta: </p>
-          <DatePicker selected={fechaHasta} onChange={handleFechaHastaChange} />
+        <h2>Ingrese las fechas y ciudad para su estadia:</h2>
+        <div className="contenedor-fechas">
+          <div className="fecha-desde">
+            <p>Desde: </p>
+            <DatePicker selected={fechaDesde} onChange={handleFechaDesdeChange} />
+          </div>
+          <div className="fecha-hasta">
+            <p>Hasta: </p>
+            <DatePicker selected={fechaHasta} onChange={handleFechaHastaChange} />
+          </div>
         </div>
         <div className="nombre-ciudad">
           <p>Ciudad: </p>

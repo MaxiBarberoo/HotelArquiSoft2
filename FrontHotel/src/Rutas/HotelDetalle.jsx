@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom"
 import '../Stylesheet/HotelDetalle.css'
 import Header from '../Componentes/Header'
 import DatePicker from 'react-datepicker'
-
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 
 function HotelDetalle() {
     const { hotelId } = useParams();
