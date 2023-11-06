@@ -38,24 +38,54 @@ function HotelDetalle() {
         return <div>Cargando...</div>; // Mostrar un loader o algún feedback mientras los datos se están cargando
     }
 
-    const handleReserva = () =>{
-        
-    }
+    const handleReserva = () => {
+        const url = `http://localhost:8090/reservas`;
+        const userId = 1;
+
+        // Creamos el cuerpo de la solicitud
+        const reserva = {
+            user_id: userId,
+            hotel_id: hotelId,
+            fecha_ingreso: fechaDesde,
+            fecha_egreso: fechaHasta
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reserva)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al crear la reserva.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Reserva creada con éxito.');
+            // Aquí puedes manejar acciones post-reserva, como redireccionar a una página de confirmación, mostrar un mensaje, etc.
+        })
+        .catch(error => {
+            alert('Ha habido un error al realizar su reserva. Inténtelo nuevamente.');
+            // Maneja el error, mostrando un mensaje al usuario o lo que consideres necesario.
+        });
+    };
 
     return (
         <div>
             <Header />
             <div className="contenedor-hoteles">
                 <p className="nombre-hotel1">
-                    <strong>{props.nombreHotel}</strong>
+                    <strong>{hotel.name}</strong>
                 </p>
                 <p className="cantidad-piezas">
-                    Habitaciones: {props.piezas}
+                    Habitaciones: {hotel.cantHabitaciones}
                 </p>
                 <p className="descripcion-hotel">
-                    Descripción: {props.descripcion}
+                    Descripción: {hotel.descripcion}
                 </p>
-
                 <h2>Amenities del hotel:</h2>
                 <ul>
                     {amenities.map((amenitie, index) => (
