@@ -53,6 +53,7 @@ function Home() {
         })
         .then(data => {
           setHotelesDisponibles(data);
+          setBusquedaRealizada(true);
         })
         .catch(error => {
           console.error('Hubo un problema con la solicitud fetch:', error);
@@ -107,7 +108,7 @@ function Home() {
       </form>
       <div className="contenedor-hoteles-r">
         {busquedaRealizada ? (
-          hotelesDisponibles.length ? (
+          hotelesDisponibles.length > 0 ? (
             hotelesDisponibles.map((hotel) => (
               <div key={hotel.id}>
                 <HotelesR
