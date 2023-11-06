@@ -3,9 +3,11 @@ package controller
 import (
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
 	service "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/services"
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func CreateMapping(c *gin.Context) {
@@ -46,10 +48,12 @@ func CheckAvailability(c *gin.Context) {
 	availability, err2 := service.AmadeusMappingService.CheckAvailability(searchDto)
 
 	if err2 != nil {
-		c.JSON(http.StatusBadRequest, err)
+    fmt.Println(err2)
+		c.JSON(http.StatusBadRequest, err2)
 		return
 	}
 
+  fmt.Println(availability)
 	c.JSON(http.StatusAccepted, gin.H{
 		"availability": availability,
 	})

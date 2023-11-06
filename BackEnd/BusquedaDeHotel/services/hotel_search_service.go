@@ -37,6 +37,7 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 	for i := 0; i < len(hotelsByCity); i++ {
 		url := "http://localhost:8098/amadeus/availability"
 
+    searchDto.HotelId = hotelsByCity[i].Id
 		jsonData, err := json.Marshal(searchDto)
 		if err != nil {
 			return nil, e.NewBadRequestApiError("Error al convertir searchDto a JSON")
@@ -60,16 +61,19 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 		}
 
 		availability, ok := result["availability"].(bool)
+    fmt.Println("Availability: ", availability)
 		if !ok {
 			return nil, e.NewBadRequestApiError("Availability no es una cadena o no existe en el JSON")
 		}
-
+    
+    fmt.Println("Is Available: ",availability)
 		hotelsByCity[i].Availability = availability
 
 	}
 
 	var availableHotels dto.HotelsDto
 	for i := 0; i < len(hotelsByCity); i++ {
+    fmt.Println("Hotel Availability: ", hotelsByCity[i].Availability)
 		if hotelsByCity[i].Availability == true {
 			availableHotels = append(availableHotels, hotelsByCity[i])
 		}

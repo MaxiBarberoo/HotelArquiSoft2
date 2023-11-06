@@ -3,6 +3,8 @@ package clients
 import (
 	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+
+
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,8 +26,8 @@ func CreateMapping(amadeusMapping model.AmadeusMapping) e.ApiError {
 }
 func GetMappingByHotelId(hotelId string) (model.AmadeusMapping, e.ApiError) {
 	var amadeusMapping model.AmadeusMapping
-	err := Db.Where("hotelid = ?", hotelId).First(&amadeusMapping) // Chequear nombre del atributo hotelId en la tabla
-	if err != nil {
+	result := Db.Where("hotel_id = ?", hotelId).Find(&amadeusMapping) // Chequear nombre del atributo hotelId en la tabla
+	if result.Error != nil {
 		var errorModel model.AmadeusMapping
 		return errorModel, e.NewBadRequestApiError("Error al obtener el mapping del hotel")
 	}

@@ -8,6 +8,8 @@ import (
 
 func main() {
 	db.StartDbEngine()
-	app.StartRoute()
-	cache.InitCache()
+	go app.StartRoute()
+	go cache.InitCache()
+
+  select{}
 }

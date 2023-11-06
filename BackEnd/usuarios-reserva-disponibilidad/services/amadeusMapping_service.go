@@ -2,7 +2,7 @@ package services
 
 import (
 	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
-	cache "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/cache"
+	cacheClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/cache"
 	amadeusMappingClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/amadeus"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type AccessTokenResponse struct {
@@ -53,12 +54,16 @@ func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappi
 
 func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError) {
 
-	cacheKey := fmt.Sprintf("availability:%s:%s:%s", searchDto.HotelId, searchDto.FechaIngreso, searchDto.FechaEgreso)
+	cacheKey := searchDto.HotelId
 
 	// 2. Verificar el caché
-	cachedValue := cache.Get(cacheKey)
+	cachedValue := cacheClient.Get(cacheKey)
 	if cachedValue != nil {
-		available, _ := strconv.ParseBool(string(cachedValue))
+		available, err := strconv.ParseBool(string(cachedValue))
+    if err != nil{
+      fmt.Println(err)
+      return false, e.NewBadRequestApiError("Error al convertir el atributo")
+    }
 		return available, nil
 	}
 
@@ -97,11 +102,16 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 
 	// Acceder al access_token
 	accessToken := tokenResponse.AccessToken
+  fmt.Println("Token: " + accessToken)
+  // Hasta aca todo joya papurri
+  
+  fechaIngresoFormateada := searchDto.FechaIngreso.Format("2006-01-02")
+  FechaEgresoFormateada := searchDto.FechaEgreso.Format("2006-01-02")
 
-	url = fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, searchDto.FechaIngreso, searchDto.FechaEgreso)
+	url = fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, fechaIngresoFormateada, FechaEgresoFormateada)
 	// Crear la solicitud HTTP
 
-	req, err = http.NewRequest("GET", url, nil)
+	req, err = http.NewRequest("GET", url, strings.NewReader(""))
 	if err != nil {
 		fmt.Println("Error creando la solicitud:", err)
 		return false, e.NewBadRequestApiError("Error al crear la solicitud de amadeus")
@@ -119,6 +129,10 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	}
 	defer resp.Body.Close()
 
+  if resp.StatusCode != http.StatusOK{
+      return false, e.NewBadRequestApiError("La respuesta de amadeus fue distinta a OK")
+  }
+
 	var responseMap map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&responseMap)
 	if err != nil {
@@ -127,12 +141,13 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	}
 
 	// Acceder al atributo "available"
+  fmt.Println(responseMap)
 	if data, ok := responseMap["data"].([]interface{}); ok && len(data) > 0 {
 		if offer, ok := data[0].(map[string]interface{}); ok {
 			if available, ok := offer["available"].(bool); ok {
 				fmt.Println("Disponibilidad del hotel:", available)
 
-				cache.Set(cacheKey, []byte(strconv.FormatBool(available)))
+				cacheClient.Set(cacheKey, []byte(strconv.FormatBool(available)))
 				return available, nil
 
 			}
@@ -149,6 +164,7 @@ func (s *amadeusMappingService) GetMappingByHotelId(hotelId string) (dto.Amadeus
 
 	if err != nil {
 		var errorDto dto.AmadeusMappingDto
+    fmt.Println(err)
 		return errorDto, err
 	}
 
