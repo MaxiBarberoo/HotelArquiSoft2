@@ -7,5 +7,6 @@ type HotelDto struct {
 	Ciudad           string   `json:"ciudad"`
 	Desc             string   `json:"descripcion"`
 	Amenities        []string `json:"amenities"`
+	AmadeusId        string   `json:"amadeus_id"`
 }
 type HotelsDto []HotelDto

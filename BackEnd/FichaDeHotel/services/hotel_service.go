@@ -5,7 +5,10 @@ import (
 	hotelClient "HotelArquiSoft2/BackEnd/FichaDeHotel/clients/hotel"
 	"HotelArquiSoft2/BackEnd/FichaDeHotel/dto"
 	"HotelArquiSoft2/BackEnd/FichaDeHotel/model"
+	"bytes"
+	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
 )
 
 type hotelService struct{}
@@ -63,6 +66,28 @@ func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 		return errorHotel, e.NewBadRequestApiError("Hotel could not be inserted")
 	}
 	hotelDto.Id = hotel.ID.Hex()
+
+	var dtoAmadeusMapping dto.AmadeusMappingDto
+	dtoAmadeusMapping.HotelId = hotelDto.Id
+	dtoAmadeusMapping.AmadeusHotelId = hotelDto.AmadeusId
+
+	url := "http://localhost:8098/amadeus/mapping"
+
+	jsonData, err := json.Marshal(dtoAmadeusMapping)
+	if err != nil {
+		return hotelDto, e.NewBadRequestApiError("Error al convertir el json para llamar al servicio de mapeo ")
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return hotelDto, e.NewBadRequestApiError("Error al llamar al servicio de mapeo de ids")
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusAccepted {
+		return hotelDto, e.NewBadRequestApiError("Error al llamar al servicio de mapeo de ids")
+	}
 
 	return hotelDto, nil
 }

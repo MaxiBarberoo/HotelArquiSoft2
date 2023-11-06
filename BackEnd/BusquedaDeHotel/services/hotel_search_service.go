@@ -4,6 +4,7 @@ import (
 	e "HotelArquiSoft2/BackEnd/BusquedaDeHotel/Utils"
 	hotelSearchClient "HotelArquiSoft2/BackEnd/BusquedaDeHotel/clients/HotelSearch"
 	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,10 +35,16 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 	}
 
 	for i := 0; i < len(hotelsByCity); i++ {
-		url := fmt.Sprintf("http://localhost:8095/getavailabilitybyid/%s", hotelsByCity[i].Id)
-		resp, err := http.Get(url)
+		url := "http://localhost:8098/amadeus/availability"
+
+		jsonData, err := json.Marshal(searchDto)
 		if err != nil {
-			return nil, e.NewBadRequestApiError("Error al llamar al microservicio de ficha de hotel")
+			return nil, e.NewBadRequestApiError("Error al convertir searchDto a JSON")
+		}
+
+		resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			return nil, e.NewBadRequestApiError("Error al llamar al microservicio de disponibilidad de hotel")
 		}
 		defer resp.Body.Close()
 
