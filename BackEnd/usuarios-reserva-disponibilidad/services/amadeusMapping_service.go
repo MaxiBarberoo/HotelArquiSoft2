@@ -2,6 +2,7 @@ package services
 
 import (
 	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
+	cache "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/cache"
 	amadeusMappingClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/amadeus"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
@@ -9,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type AccessTokenResponse struct {
@@ -50,6 +52,16 @@ func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappi
 }
 
 func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError) {
+
+	cacheKey := fmt.Sprintf("availability:%s:%s:%s", searchDto.HotelId, searchDto.FechaIngreso, searchDto.FechaEgreso)
+
+	// 2. Verificar el caché
+	cachedValue := cache.Get(cacheKey)
+	if cachedValue != nil {
+		available, _ := strconv.ParseBool(string(cachedValue))
+		return available, nil
+	}
+
 	amadeusMappingDto, errMapping := s.GetMappingByHotelId(searchDto.HotelId)
 	if errMapping != nil {
 		return false, e.NewBadRequestApiError("Error al obtener el hotel")
@@ -120,8 +132,9 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 			if available, ok := offer["available"].(bool); ok {
 				fmt.Println("Disponibilidad del hotel:", available)
 
+				cache.Set(cacheKey, []byte(strconv.FormatBool(available)))
 				return available, nil
-				// Puedes utilizar la variable "available" según tus necesidades en el resto de tu código
+
 			}
 		}
 	}
