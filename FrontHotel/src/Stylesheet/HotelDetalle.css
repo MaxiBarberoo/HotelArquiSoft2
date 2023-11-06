@@ -52,3 +52,37 @@ h2 {
   background-color: #7f1818;
   color: #ffffffd8;
 }
+
+.boton-volver {
+  position: absolute;
+  right: 20px;  /* distancia desde la derecha */
+  top: 20px;    /* distancia desde la parte superior */
+  border-radius: 20px;
+  border: 1px solid #FF4B2B;
+  background-color: #FF4B2B;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 10px 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+}
+
+.boton-volver:active {
+  transform: scale(0.95);
+}
+
+.boton-volver:focus {
+  outline: none;
+}
+
+.boton-volver.ghost {
+  background-color: transparent;
+  border-color: #FFFFFF;
+}
+
+.boton-volver:hover {
+  background-color: #7f1818;
+  color: #ffffffd8;
+}

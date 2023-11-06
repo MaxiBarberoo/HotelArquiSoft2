@@ -39,7 +39,7 @@ function HotelDetalle() {
     }
 
     const handleReserva = () => {
-        const url = `http://localhost:8090/reservas`;
+        const url = `http://localhost:8098/reservas`;
         const userId = 1;
 
         // Creamos el cuerpo de la solicitud
@@ -73,9 +73,14 @@ function HotelDetalle() {
         });
     };
 
+    const handleHome = () => {
+        navigate("/");  // Esto redirigirá al usuario a la página principal
+    }
+
     return (
         <div>
             <Header />
+            <button className="boton-volver" onClick={handleHome}>Volver</button>
             <div className="contenedor-hoteles">
                 <p className="nombre-hotel1">
                     <strong>{hotel.name}</strong>

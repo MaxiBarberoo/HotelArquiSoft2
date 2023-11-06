@@ -32,7 +32,7 @@ function Home() {
       alert("Debes completar los campos de fecha y de ciudad.");
     } else {
       // Define la URL y los parámetros de la solicitud
-      const url = 'http://localhost:8090/hotels'; 
+      const url = 'http://localhost:8083/hotels'; 
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
