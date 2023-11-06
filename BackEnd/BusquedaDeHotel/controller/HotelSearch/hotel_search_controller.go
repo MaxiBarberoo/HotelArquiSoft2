@@ -75,5 +75,9 @@ func GetHotelsByDateAndCity(c *gin.Context) {
 		return
 	}
 	hotelsDto, err = service.HotelSearchService.GetHotelsByDateAndCity(searchDto)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 	c.JSON(http.StatusOK, hotelsDto)
 }
