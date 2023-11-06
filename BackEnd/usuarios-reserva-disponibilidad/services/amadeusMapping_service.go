@@ -68,7 +68,7 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	}
 
 	url := "https://test.api.amadeus.com/v1/security/oauth2/token"
-	data := "grant_type=client_credentials&client_id=[KEY]&client_secret=[SECRET]"
+	data := "grant_type=client_credentials&client_id=7uzLTegWNA20dQ3CjwIeG9gNgYbvhhhk&client_secret=7xOMYIvfR8KWChEu"
 	//AGREGAR API KEY Y API SECRET EN CLIENT ID Y CLIENT SECRET RESPECTIVAMENTE
 
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))

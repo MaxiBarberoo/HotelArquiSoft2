@@ -47,7 +47,7 @@ func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
 	q := solr.Query{
 		Params: solr.URLParamMap{
 			"q":           []string{"ciudad:" + searchDto.Ciudad},
-			"facet.field": []string{"id", "name", "cantHabitaciones", "descripcion", "amenities"},
+			"facet.field": []string{"hotel_id", "name", "cantHabitaciones", "descripcion", "amenities"},
 			"facet":       []string{"true"},
 		},
 		Rows: 100000,
@@ -63,57 +63,107 @@ func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
 
 	// grab results for ease of use later on
 	results := res.Results
+  var solrDto dto.SolrDto
 
-	var hotelsByCity dto.HotelsDto
+
+var hotelsByCity dto.HotelsDto
+	var hotelDto dto.HotelDto
 	for i := 0; i < results.Len(); i++ {
+// Asigna el valor del campo "hotel_id" a una variable de tipo interface{}
+hotelIdInterface := results.Get(i).Field("hotel_id")
 
-		hotelIdInterface := results.Get(i).Field("id")
-		hotelId, ok := hotelIdInterface.(string)
-		if !ok {
-			// handle the error; this means that the "id" field is not a string
+// Verifica si el valor es un slice de interfaces
+if hotelIds, ok := hotelIdInterface.([]interface{}); ok {
+    // Inicializa un nuevo slice de strings
+    var hotelIdStrings []string
+
+    // Convierte cada elemento a string
+    for _, id := range hotelIds {
+        if strId, ok := id.(string); ok {
+            hotelIdStrings = append(hotelIdStrings, strId)
+        }
+    }
+
+    // Asigna el nuevo slice de strings a tu variable solrDto.Id
+    solrDto.Id = hotelIdStrings
+} else {
+    // Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("ID is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
-		}
-		hotelsByCity[i].Id = hotelId
+}
+		hotelDto.Id = solrDto.Id[0]
 
-		hotelNameInterface := results.Get(i).Field("name")
-		hotelName, ok := hotelNameInterface.(string)
-		if !ok {
-			// handle the error; this means that the "id" field is not a string
+nameInterface := results.Get(i).Field("name")
+if names, ok := nameInterface.([]interface{}); ok {
+    // Inicializa un nuevo slice de strings
+    var nameStrings []string
+
+    // Convierte cada elemento a string
+    for _, name := range names {
+        if strName, ok := name.(string); ok {
+            nameStrings = append(nameStrings, strName)
+        }
+    }
+
+    // Asigna el nuevo slice de strings a tu variable solrDto.Id
+    solrDto.Name = nameStrings
+} else {
+    // Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("Name is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
-		}
-		hotelsByCity[i].Name = hotelName
+}
+    fmt.Println(solrDto.Name[0])
+		hotelDto.Name = solrDto.Name[0]
 
-		hotelCantHabitacionesInterface := results.Get(i).Field("cantHabitaciones")
-		hotelCantHabitaciones, ok := hotelCantHabitacionesInterface.(int)
-		if !ok {
-			// handle the error; this means that the "id" field is not a string
-			fmt.Println("CantHabitaciones is not an int!")
-			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
-		}
-		hotelsByCity[i].CantHabitaciones = hotelCantHabitaciones
 
 		hotelDescInterface := results.Get(i).Field("descripcion")
-		hotelDesc, ok := hotelDescInterface.(string)
-		if !ok {
-			// handle the error; this means that the "id" field is not a string
+    if descs, ok := hotelDescInterface.([]interface{}); ok {
+      // Inicializa un nuevo slice de strings
+      var descStrings []string
+
+      // Convierte cada elemento a string
+      for _, desc := range descs {
+        if strDesc, ok := desc.(string); ok {
+            descStrings = append(descStrings, strDesc)
+        }
+    }
+
+    // Asigna el nuevo slice de strings a tu variable solrDto.Id
+    solrDto.Desc = descStrings
+    } else {
+    // Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("Descripcion is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
-		}
-		hotelsByCity[i].Desc = hotelDesc
+    }
+    fmt.Println(solrDto.Desc[0])
+		hotelDto.Desc = solrDto.Desc[0]
+
 
 		hotelAmenitiesInterface := results.Get(i).Field("amenities")
-		hotelAmenities, ok := hotelAmenitiesInterface.([]string)
-		if !ok {
-			// handle the error; this means that the "id" field is not a string
-			fmt.Println("Descripcion is not a string array!")
+    if amenities, ok := hotelAmenitiesInterface.([]interface{}); ok {
+      // Inicializa un nuevo slice de strings
+      var amenitiesStrings []string
+
+      // Convierte cada elemento a string
+      for _, amenitie := range amenities {
+        if strAmenitie, ok := amenitie.(string); ok {
+            amenitiesStrings = append(amenitiesStrings, strAmenitie)
+        }
+
+    }
+
+    // Asigna el nuevo slice de strings a tu variable solrDto.Id
+    solrDto.Amenities = amenitiesStrings
+    } else {
+    // Maneja el caso en que el tipo no sea el esperado
+			fmt.Println("Amenities is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
-		}
-		hotelsByCity[i].Amenities = hotelAmenities
+    }
+    fmt.Println(solrDto.Amenities[0])
+		hotelDto.Amenities = solrDto.Amenities
 
-		hotelsByCity[i].Ciudad = searchDto.Ciudad
 	}
-
+  
+    
 	return hotelsByCity, nil
 }

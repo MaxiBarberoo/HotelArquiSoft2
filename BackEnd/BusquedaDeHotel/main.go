@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
-	controller.Consumer()
-	app.StartRoute()
+	go app.StartRoute()
+
+	go controller.Consumer()
+
+  select{}
 }
