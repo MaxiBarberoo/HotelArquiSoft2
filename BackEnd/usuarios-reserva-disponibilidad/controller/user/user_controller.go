@@ -2,7 +2,6 @@ package controller
 
 import (
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
-	jwtG "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/jwt"
 	service "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/services"
 	"net/http"
 	"strconv"
@@ -94,17 +93,10 @@ func UserAuth(c *gin.Context) {
 	if autenticado == true {
 		userDto.Tipo = tipo
 		userDto.Id = id
-		token, err := jwtG.GenerateUserToken(userDto)
-		if err != nil {
-			log.Error(err.Error())
-			c.JSON(http.StatusBadRequest, err.Error())
-			return
-		}
 		c.JSON(http.StatusAccepted, gin.H{
 			"autenticacion": "true",
 			"tipo":          tipo,
 			"user_id":       id,
-			"token":         token,
 		})
 	} else {
 		c.JSON(http.StatusAccepted, gin.H{

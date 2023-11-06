@@ -3,6 +3,7 @@ module HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad
 go 1.20
 
 require (
+	github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
