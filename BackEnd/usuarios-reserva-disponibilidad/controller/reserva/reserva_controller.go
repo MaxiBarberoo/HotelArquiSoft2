@@ -3,7 +3,6 @@ package controller
 import (
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
 	service "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/services"
-	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"strconv"
 
@@ -42,27 +41,6 @@ func GetReservas(c *gin.Context) {
 func ReservaInsert(c *gin.Context) {
 	var reservaDto dto.ReservaDto
 
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
 	err1 := c.BindJSON(&reservaDto)
 
 	// Error Parsing json param
@@ -82,49 +60,6 @@ func ReservaInsert(c *gin.Context) {
 	c.JSON(http.StatusCreated, reservaDto)
 }
 
-func GetRooms(c *gin.Context) {
-
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if service.ReservaService.GetRooms(reservaDto) {
-		c.JSON(http.StatusAccepted, gin.H{
-			"disponibilidad": "true",
-		})
-	} else {
-		c.JSON(http.StatusAccepted, gin.H{
-			"disponibilidad": "false",
-		})
-	}
-}
-
 func GetReservasByUser(c *gin.Context) {
 	userId, _ := strconv.Atoi(c.Param("user_id"))
 
@@ -139,276 +74,17 @@ func GetReservasByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, reservasDto)
 }
 
-func GetReservasByFecha(c *gin.Context) {
+func DeleteReserva(c *gin.Context) {
+	reservaId, _ := strconv.Atoi(c.Param("reserva_id"))
 
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err = service.ReservaService.GetReservasByFecha(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetHotelsByFecha(c *gin.Context) {
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-	log.Debug(c)
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-	reservasDto, err = service.ReservaService.GetHotelsByFecha(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetReservasByHotel(c *gin.Context) {
-	log.Debug("Hotel id to load: " + c.Param("hotel_id"))
-
-	hotelId, _ := strconv.Atoi(c.Param("hotel_id"))
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err := service.ReservaService.GetReservasByHotel(hotelId)
+	err := service.ReservaService.DeleteReserva(reservaId)
 
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetReservasByHotelAndFecha(c *gin.Context) {
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
+	c.JSON(http.StatusOK, gin.H{
+		"Deleted": "true",
 	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err = service.ReservaService.GetReservasByHotelAndFecha(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetReservasByHotelAndUser(c *gin.Context) {
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err = service.ReservaService.GetReservasByHotelAndUser(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetReservasByFechaAndUser(c *gin.Context) {
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err = service.ReservaService.GetReservasByFechaAndUser(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
-}
-
-func GetReservasByHotelFechaAndUser(c *gin.Context) {
-	var reservaDto dto.ReservaDto
-
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token no proporcionado",
-		})
-		return
-	}
-
-	secret := "secreto"
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Token invalido",
-		})
-		return
-	}
-
-	err = c.BindJSON(&reservaDto)
-	if err != nil {
-		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var reservasDto dto.ReservasDto
-
-	reservasDto, err = service.ReservaService.GetReservasByHotelFechaAndUser(reservaDto)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, reservasDto)
 }

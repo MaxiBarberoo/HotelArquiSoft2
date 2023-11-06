@@ -1,12 +1,14 @@
 package services
 
 import (
-  "bytes"
-  "encoding/json"
-  "net/http"
 	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
+	amadeusMappingClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/amadeus"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
 	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
 )
 
 type AccessTokenResponse struct {
@@ -17,9 +19,9 @@ type AccessTokenResponse struct {
 type amadeusMappingService struct{}
 
 type amadeusMappingServiceInterface interface {
-  CreateMapping(amadeusMappingDto dto.AmadeusMappingDto) (e.ApiError)
-  CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError)
-  GetMappingByHotelId(hotelId string) (dto.AmadeusMappingDto, e.ApiError)
+	CreateMapping(amadeusMappingDto dto.AmadeusMappingDto) e.ApiError
+	CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError)
+	GetMappingByHotelId(hotelId string) (dto.AmadeusMappingDto, e.ApiError)
 }
 
 var (
@@ -30,33 +32,37 @@ func init() {
 	AmadeusMappingService = &amadeusMappingService{}
 }
 
-func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappingDto) (e.ApiError) {
+func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappingDto) e.ApiError {
 
 	var amadeusMapping model.AmadeusMapping
 
-  amadeusMapping.HotelId = amadeusMappingDto.HotelId
-  amadeusMapping.AmadeusHotelId = amadeusMappingDto.AmadeusHotelId
+	amadeusMapping.HotelId = amadeusMappingDto.HotelId
+	amadeusMapping.AmadeusHotelId = amadeusMappingDto.AmadeusHotelId
 
-  err := amadeusMappingClient.CreateMapping(amadeusMapping)
+	err := amadeusMappingClient.CreateMapping(amadeusMapping)
 
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
 
-  return nil
+	return nil
 
 }
 
 func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError) {
-  amadeusMappingDto := GetMappingByHotelId(searchDto.HotelId)
+	amadeusMappingDto, errMapping := s.GetMappingByHotelId(searchDto.HotelId)
+	if errMapping != nil {
+		return false, e.NewBadRequestApiError("Error al obtener el hotel")
+	}
 
-  url := "https://test.api.amadeus.com/v1/security/oauth2/token"
+	url := "https://test.api.amadeus.com/v1/security/oauth2/token"
 	data := "grant_type=client_credentials&client_id=[KEY]&client_secret=[SECRET]"
+	//AGREGAR API KEY Y API SECRET EN CLIENT ID Y CLIENT SECRET RESPECTIVAMENTE
 
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
 	if err != nil {
 		fmt.Println("Error creando la solicitud:", err)
-		return
+		return false, e.NewBadRequestApiError("Error al pedir el token")
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -65,7 +71,7 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error haciendo la solicitud:", err)
-		return
+		return false, e.NewBadRequestApiError("Error al pedir el token")
 	}
 	defer resp.Body.Close()
 
@@ -74,39 +80,38 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
 	if err != nil {
 		fmt.Println("Error decodificando la respuesta JSON:", err)
-		return
+		return false, e.NewBadRequestApiError("Error al obtener el token")
 	}
 
 	// Acceder al access_token
 	accessToken := tokenResponse.AccessToken
 
-
-  url := fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, searchDto.FechaIngreso, searchDto.FechaEgreso)
+	url = fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, searchDto.FechaIngreso, searchDto.FechaEgreso)
 	// Crear la solicitud HTTP
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("Error creando la solicitud:", err)
-		return
+		return false, e.NewBadRequestApiError("Error al crear la solicitud de amadeus")
 	}
 
 	// Agregar el encabezado de autorización
-	req.Header.Set("Authorization", "Bearer " + accessToken)
+	req.Header.Set("Authorization", "Bearer "+accessToken)
 
 	// Realizar la solicitud
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	client = &http.Client{}
+	resp, err = client.Do(req)
 	if err != nil {
 		fmt.Println("Error haciendo la solicitud:", err)
-		return
+		return false, e.NewBadRequestApiError("Error al realizar la solicitud de amadeus")
 	}
 	defer resp.Body.Close()
 
-  var responseMap map[string]interface{}
+	var responseMap map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&responseMap)
 	if err != nil {
 		fmt.Println("Error decodificando la respuesta JSON:", err)
-		return
+		return false, e.NewBadRequestApiError("Error decodificando la respuesta JSON de Amadeus")
 	}
 
 	// Acceder al atributo "available"
@@ -115,26 +120,29 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 			if available, ok := offer["available"].(bool); ok {
 				fmt.Println("Disponibilidad del hotel:", available)
 
+				return available, nil
 				// Puedes utilizar la variable "available" según tus necesidades en el resto de tu código
 			}
-    }
-  }
+		}
+	}
+
+	return false, e.NewBadRequestApiError("Hubo un problema al extraer el atributo disponibilidad de la respuesta de Amadeus")
 
 }
 
-func (s *amadeusMappingService) GetMappingByHotelId(hotelId string) (dto.AmadeusMappingDto, e.ApiError){
+func (s *amadeusMappingService) GetMappingByHotelId(hotelId string) (dto.AmadeusMappingDto, e.ApiError) {
 
+	amadeusMapping, err := amadeusMappingClient.GetMappingByHotelId(hotelId)
 
-  var amadeusMapping, err := amadeusMappingClient.GetMappingByHotelId(hotelId)
-
-  if err != nil{
-    return nil, err
-  }
+	if err != nil {
+		var errorDto dto.AmadeusMappingDto
+		return errorDto, err
+	}
 
 	var amadeusMappingDto dto.AmadeusMappingDto
-  
-  amadeusMappingDto.HotelId = amadeusMapping.HotelId
-  amadeusMappingDto.AmadeusHotelId = amadeusMapping.AmadeusHotelId
+
+	amadeusMappingDto.HotelId = amadeusMapping.HotelId
+	amadeusMappingDto.AmadeusHotelId = amadeusMapping.AmadeusHotelId
 
 	return amadeusMappingDto, nil
 }
