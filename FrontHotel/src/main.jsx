@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')).render(
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/detalle/:hotel_id" element={<HotelDetalle />} />
+        <Route path="/detalle/:hotelId/:fechaDesde/:fechaHasta" element={<HotelDetalle />} />
       </Routes>
     </Router>
   </React.StrictMode>

@@ -32,7 +32,7 @@ function Home() {
       alert("Debes completar los campos de fecha y de ciudad.");
     } else {
       // Define la URL y los parámetros de la solicitud
-      const url = 'http://localhost:8083/hotels'; 
+      const url = 'http://localhost:8083/hotels';
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,27 +61,11 @@ function Home() {
     }
   };
 
-  /*useEffect(() => {
-    const fetchAmenitiesForHotels = async () => {
-      const hotelsWithAmenities = await Promise.all(
-        amenities.map(async (amenitie) => {
-          const response = await fetch(`http://localhost:8090/amenities/${amenitie.id}`);
-          if (response.ok) {
-            const amenitiesData = await response.json();
-            return { ...amenitie, amenities: amenitiesData };
-          } else {
-            console.error(`Error en la petición GET de amenities para el hotel ${hotel.id}`);
-            return amenitie;
-          }
-        })
-      );
-      setHoteles(hotelsWithAmenities);
-    };
-  
-    if (amenities.length > 0) {
-      fetchAmenitiesForHotels();
-    }
-  }, [hotelesDisponibles]);*/
+  const handleVerDetallesClick = () => {
+    navigate(
+      `/detalle/${props.hotelId}/${props.fechaDesde}/${props.fechaHasta}`
+    );
+  }
 
   return (
     <div>
@@ -119,6 +103,7 @@ function Home() {
                   fechaDesde={fechaDesde}
                   fechaHasta={fechaHasta}
                 />
+                <button onClick={handleVerDetallesClick} className="boton-detalles">Ver detalles</button>
               </div>
             ))
           ) : (

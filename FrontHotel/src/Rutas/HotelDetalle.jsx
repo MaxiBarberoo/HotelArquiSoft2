@@ -2,16 +2,15 @@ import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import '../Stylesheet/HotelDetalle.css'
 import Header from '../Componentes/Header'
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 function HotelDetalle() {
     const { hotelId } = useParams();
+    const { fechaDesde } = useParams();
+    const { fechaHasta } = useParams();
     const navigate = useNavigate();
     const [hotel, setHotel] = useState(null);
     const [amenities, setAmenities] = useState([]);
-    const location = useLocation();
-    const fechaDesde = location.state?.fechaDesde;
-    const fechaHasta = location.state?.fechaHasta;
 
     useEffect(() => {
         // Define la URL y realiza la solicitud
