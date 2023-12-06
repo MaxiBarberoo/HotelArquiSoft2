@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { json, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "../Componentes/Header";
 import HotelesR from '../Componentes/HotelesR'
 import DatePicker from "react-datepicker"
@@ -12,6 +12,7 @@ function Home() {
   const [fechaHasta, setFechaHasta] = useState(null);
   const [ciudad, setCiudad] = useState(null);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
+  const navigate = useNavigate();
 
   const handleFechaDesdeChange = (date) => {
     setFechaDesde(date);
