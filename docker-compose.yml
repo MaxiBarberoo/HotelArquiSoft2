@@ -1,0 +1,136 @@
+version: '3'
+
+services:
+  sqldb:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: pruebaHash
+      MYSQL_ROOT_PASSWORD: arquisoft1
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-u root",
+          "-p arquisoft1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  memcached:
+    image: memcached:1.6.16
+    restart: always
+    ports:
+      - "11211:11211"
+
+  urd:
+    build: ./BackEnd/usuarios-reserva-disponibilidad
+    deploy:
+      replicas: 3
+    depends_on:
+      sqldb:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+    ports:
+      - "8098"
+
+  urdnginx:
+    image: nginx:latest
+    volumes:
+      - ./BackEnd/usuarios-reserva-disponibilidad/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8020:8020"
+    depends_on:
+      - urd
+
+  mongodatabase:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      timeout: 20s
+      retries: 10
+
+  fichadehotel:
+    build: ./BackEnd/FichaDeHotel
+    deploy:
+      replicas: 3
+    volumes:
+      - hotel_imagenes:/fichadehotel/imagenes
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodatabase:
+        condition: service_started
+    ports:
+      - "8090"
+
+  fichadehotelnginx:
+    image: nginx:latest
+    volumes:
+      - ./Hotel-api/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8021:8021"
+    depends_on:
+      - fichadehotel
+
+  solr:
+    image: solr:8
+    ports:
+      - "8983:8983"
+    entrypoint:
+      - "bash"
+      - "-c"
+      - "precreate-core hotels; exec solr -f"
+
+  busquedadehotel:
+    build: ./BackEnd/BusquedaDeHotel
+    deploy:
+      replicas: 3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      solr:
+        condition: service_started
+    ports:
+      - "8083"
+
+  searchnginx:
+    image: nginx:latest
+    volumes:
+      - ./Search-api/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8022:8022"
+    depends_on:
+      - busquedadehotel
+
+  frontend:
+    build: ./FrontHotel
+    ports:
+      - "5173:5173"
+
+volumes:
+  hotel_imagenes:
