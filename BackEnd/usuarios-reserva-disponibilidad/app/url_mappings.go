@@ -1,9 +1,9 @@
 package app
 
 import (
-	amadeusController "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/controller/amadeus"
-	reservaController "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/controller/reserva"
-	userController "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/controller/user"
+	amadeusController "urd/controller/amadeus"
+	reservaController "urd/controller/reserva"
+	userController "urd/controller/user"
 	log "github.com/sirupsen/logrus"
 )
 

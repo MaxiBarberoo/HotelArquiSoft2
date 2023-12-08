@@ -1,7 +1,7 @@
 package db
 
 import (
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/clients/hotel"
+	"fichadehotel/clients/hotel"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,12 +13,7 @@ import (
 var db *mongo.Database
 
 func init() {
-	// DB Connection Parameters
-	DBName := "pruebaHash"
-	DBHost := "localhost"
-	DBPort := "27017"
-
-	clientOptions := options.Client().ApplyURI("mongodb://" + DBHost + ":" + DBPort)
+	clientOptions := options.Client().ApplyURI("mongodb://root:password@mongodatabase:27017/?authSource=admin&authMechanism=SCRAM-SHA-256")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 
 	if err != nil {
@@ -30,7 +25,7 @@ func init() {
 		log.Fatal("Failed to ping the MongoDB server: ", err)
 	}
 
-	db = client.Database(DBName)
+	db = client.Database("prueba")
 
 	// Set up the database for the hotel client
 	hotel.Db = db

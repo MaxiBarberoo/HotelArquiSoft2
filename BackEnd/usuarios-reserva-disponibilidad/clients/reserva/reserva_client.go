@@ -1,8 +1,8 @@
 package clients
 
 import (
-	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+	e "urd/Utils"
+	"urd/model"
 
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"

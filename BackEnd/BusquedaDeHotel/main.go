@@ -1,8 +1,8 @@
 package main
 
 import (
-	app "HotelArquiSoft2/BackEnd/BusquedaDeHotel/app"
-	controller "HotelArquiSoft2/BackEnd/BusquedaDeHotel/controller/HotelSearch"
+	app "busquedadehotel/app"
+	controller "busquedadehotel/controller/HotelSearch"
 )
 
 func main() {

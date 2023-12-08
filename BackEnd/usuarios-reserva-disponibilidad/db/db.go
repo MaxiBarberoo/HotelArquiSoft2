@@ -1,10 +1,10 @@
 package db
 
 import (
-	reservaClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/reserva"
-	userClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/user"
-  AmadeusMappingClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/amadeus"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+	reservaClient "urd/clients/reserva"
+	userClient "urd/clients/user"
+  AmadeusMappingClient "urd/clients/amadeus"
+	"urd/model"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -20,9 +20,9 @@ func init() {
 	// DB Connections Paramters
 	DBName := "usuarios_reserva_disponibilidad"
 	DBUser := "root"
-	DBPass := "root1234"
+	DBPass := "root"
 	//DBPass := os.Getenv("MVC_DB_PASS")
-	DBHost := "localhost"
+	DBHost := "sqldb"
 	// ------------------------
 
 	db, err = gorm.Open("mysql", DBUser+":"+DBPass+"@tcp("+DBHost+":3306)/"+DBName+"?charset=utf8&parseTime=True")
@@ -36,7 +36,7 @@ func init() {
 	// We need to add all CLients that we build
 	userClient.Db = db
 	reservaClient.Db = db
-  AmadeusMappingClient.Db = db
+  	AmadeusMappingClient.Db = db
 }
 
 func StartDbEngine() {

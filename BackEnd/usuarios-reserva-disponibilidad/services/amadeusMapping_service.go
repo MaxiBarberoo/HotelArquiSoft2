@@ -1,11 +1,11 @@
 package services
 
 import (
-	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
-	cacheClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/cache"
-	amadeusMappingClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/amadeus"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+	e "urd/Utils"
+	cacheClient "urd/cache"
+	amadeusMappingClient "urd/clients/amadeus"
+	"urd/dto"
+	"urd/model"
 	"bytes"
 	"encoding/json"
 	"fmt"

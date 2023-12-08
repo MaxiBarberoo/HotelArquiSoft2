@@ -1,8 +1,8 @@
 package HotelSearch
 
 import (
-	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
-	service "HotelArquiSoft2/BackEnd/BusquedaDeHotel/services"
+	"busquedadehotel/dto"
+	service "busquedadehotel/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +17,7 @@ func failOnError(err error, msg string) {
 }
 
 func Consumer() {
-	conn, err := amqp.Dial("amqp://user:password@localhost:5672/")
+	conn, err := amqp.Dial("amqp://user:password@rabbitmq:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 

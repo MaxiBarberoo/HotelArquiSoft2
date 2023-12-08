@@ -1,8 +1,8 @@
 package clients
 
 import (
-	e "HotelArquiSoft2/BackEnd/BusquedaDeHotel/Utils"
-	dto "HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
+	e "busquedadehotel/Utils"
+	dto "busquedadehotel/dto"
 	"fmt"
 	solr "github.com/rtt/Go-Solr"
 )

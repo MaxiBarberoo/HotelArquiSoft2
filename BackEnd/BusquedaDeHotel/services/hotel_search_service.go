@@ -1,9 +1,9 @@
 package services
 
 import (
-	e "HotelArquiSoft2/BackEnd/BusquedaDeHotel/Utils"
-	hotelSearchClient "HotelArquiSoft2/BackEnd/BusquedaDeHotel/clients/HotelSearch"
-	"HotelArquiSoft2/BackEnd/BusquedaDeHotel/dto"
+	e "busquedadehotel/Utils"
+	hotelSearchClient "busquedadehotel/clients/HotelSearch"
+	"busquedadehotel/dto"
 	"bytes"
 	"encoding/json"
 	"fmt"

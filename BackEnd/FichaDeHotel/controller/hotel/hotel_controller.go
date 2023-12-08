@@ -1,8 +1,8 @@
 package hotel
 
 import (
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/dto"
-	service "HotelArquiSoft2/BackEnd/FichaDeHotel/services"
+	"fichadehotel/dto"
+	service "fichadehotel/services"
 	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ func failOnError(err error, msg string) {
 }
 
 func SendToQueue(hotelId string) {
-	conn, err := amqp.Dial("amqp://user:password@localhost:5672/")
+	conn, err := amqp.Dial("amqp://user:password@rabbitmq:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 

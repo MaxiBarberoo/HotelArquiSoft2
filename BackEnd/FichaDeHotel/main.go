@@ -1,8 +1,8 @@
 package main
 
 import (
-	app "HotelArquiSoft2/BackEnd/FichaDeHotel/app"
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/db"
+	app "fichadehotel/app"
+	"fichadehotel/db"
 )
 
 func main() {

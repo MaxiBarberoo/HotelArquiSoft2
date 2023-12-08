@@ -1,7 +1,7 @@
 package hotel
 
 import (
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/model"
+	"fichadehotel/model"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

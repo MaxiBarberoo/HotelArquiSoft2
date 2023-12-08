@@ -1,10 +1,10 @@
 package services
 
 import (
-	e "HotelArquiSoft2/BackEnd/FichaDeHotel/Utils"
-	hotelClient "HotelArquiSoft2/BackEnd/FichaDeHotel/clients/hotel"
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/dto"
-	"HotelArquiSoft2/BackEnd/FichaDeHotel/model"
+	e "fichadehotel/Utils"
+	hotelClient "fichadehotel/clients/hotel"
+	"fichadehotel/dto"
+	"fichadehotel/model"
 	"bytes"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"

@@ -1,10 +1,10 @@
 package services
 
 import (
-	e "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/Utils"
-	userClient "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/clients/user"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/model"
+	e "urd/Utils"
+	userClient "urd/clients/user"
+	"urd/dto"
+	"urd/model"
 	"golang.org/x/crypto/bcrypt"
 )
 

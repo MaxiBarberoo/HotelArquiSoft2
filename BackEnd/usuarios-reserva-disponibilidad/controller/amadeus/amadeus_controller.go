@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/dto"
-	service "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/services"
+	"urd/dto"
+	service "urd/services"
 	"fmt"
 	"net/http"
 

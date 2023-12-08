@@ -1,9 +1,9 @@
 package main
 
 import (
-	app "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/app"
-	cache "HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/cache"
-	"HotelArquiSoft2/BackEnd/usuarios-reserva-disponibilidad/db"
+	app "urd/app"
+	cache "urd/cache"
+	"urd/db"
 )
 
 func main() {

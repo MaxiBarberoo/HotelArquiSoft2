@@ -1,7 +1,7 @@
 package app
 
 import (
-	hotelController "HotelArquiSoft2/BackEnd/FichaDeHotel/controller/hotel"
+	hotelController "fichadehotel/controller/hotel"
 	log "github.com/sirupsen/logrus"
 )
 
