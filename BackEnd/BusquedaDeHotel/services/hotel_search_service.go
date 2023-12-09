@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 )
 
 func failOnError(err error, msg string) {
@@ -81,6 +82,8 @@ func init() {
 
 func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError) {
 
+	var wg sync.WaitGroup
+	var er e.ApiError
 	var hotelsByCity, err = hotelSearchClient.GetHotelsByDateAndCity(searchDto)
 	if err != nil {
 		var errorHotel dto.HotelsDto
@@ -88,40 +91,59 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 	}
 
 	for i := 0; i < len(hotelsByCity); i++ {
-		url := "http://localhost:8020/amadeus/availability"
+		wg.Add(1) // Añade 1 al WaitGroup por cada goroutine
 
-		searchDto.HotelId = hotelsByCity[i].Id
-		jsonData, err := json.Marshal(searchDto)
-		if err != nil {
-			return nil, e.NewBadRequestApiError("Error al convertir searchDto a JSON")
+		go func(index int) {
+			defer wg.Done() // Marca la goroutine como terminada al finalizar
+
+			url := "http://localhost:8020/amadeus/availability"
+			searchDto.HotelId = hotelsByCity[index].Id
+
+			jsonData, err := json.Marshal(searchDto)
+			if err != nil {
+				er = e.NewBadRequestApiError("Error al convertir searchDto a JSON")
+				return
+			}
+
+			resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+			if err != nil {
+				er = e.NewBadRequestApiError("Error al llamar al microservicio de disponibilidad de hotel")
+				return
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				er = e.NewBadRequestApiError("Error con la respuesta obtenida")
+				return
+			}
+
+			var result map[string]interface{}
+			err = json.Unmarshal(body, &result)
+			if err != nil {
+				er = e.NewBadRequestApiError("Error al extraer el JSON")
+				return
+			}
+
+			availability, ok := result["availability"].(bool)
+			fmt.Println("Availability:", availability)
+			if !ok {
+				er = e.NewBadRequestApiError("Availability no es una cadena o no existe en el JSON")
+				return
+			}
+
+			fmt.Println("Is Available:", availability)
+			hotelsByCity[index].Availability = availability
+		}(i)
+		if er != nil {
+			return nil, er
 		}
+	}
 
-		resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			return nil, e.NewBadRequestApiError("Error al llamar al microservicio de disponibilidad de hotel")
-		}
-		defer resp.Body.Close()
+	wg.Wait()
 
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, e.NewBadRequestApiError("Error con la respuesta obtenida")
-		}
-
-		var result map[string]interface{}
-		err = json.Unmarshal(body, &result)
-		if err != nil {
-			return nil, e.NewBadRequestApiError("Error al extraer el json")
-		}
-
-		availability, ok := result["availability"].(bool)
-		fmt.Println("Availability: ", availability)
-		if !ok {
-			return nil, e.NewBadRequestApiError("Availability no es una cadena o no existe en el JSON")
-		}
-
-		fmt.Println("Is Available: ", availability)
-		hotelsByCity[i].Availability = availability
-
+	if er != nil {
+		return nil, er
 	}
 
 	var availableHotels dto.HotelsDto
