@@ -69,6 +69,11 @@ function Home() {
     );
   }
 
+  const handleCerrarSesion = () => {
+    localStorage.removeItem('usuarioValidado');
+    navigate('/');
+  };
+
   useEffect(() => {
     if (!usuarioValidado) {
       navigate(`/home`);
@@ -78,6 +83,7 @@ function Home() {
   return (
     <div>
       <Header />
+      <button className="boton-cerrar-sesion" onClick={handleCerrarSesion}>
       <div className="contenedor-criterios">
         <h2>Ingrese las fechas y ciudad para su estadia:</h2>
         <div className="contenedor-fechas">

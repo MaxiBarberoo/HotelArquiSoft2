@@ -78,3 +78,11 @@
     background-color: #7f1818;
     color: #ffffffd8;
 }
+
+.boton-cerrar-sesion {
+  background-color: white;
+  color: red;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+}
