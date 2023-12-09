@@ -8,7 +8,7 @@ import (
 )
 
 func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
-	s, err := solr.Init("localhost", 8983, "Hotels")
+	s, err := solr.Init("solr", 8983, "Hotels")
 
 	if err != nil {
 		fmt.Println(err)
@@ -34,7 +34,7 @@ func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
 }
 
 func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError) {
-	s, err := solr.Init("localhost", 8983, "Hotels")
+	s, err := solr.Init("solr", 8983, "Hotels")
 
 	if err != nil {
 		fmt.Println(err)

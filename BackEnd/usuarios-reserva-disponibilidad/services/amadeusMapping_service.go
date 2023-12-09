@@ -98,7 +98,7 @@ func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappi
 
 func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError) {
 
-	cacheKeysinCifrar := searchDto.HotelId + searchDto.FechaIngreso + searchDto.FechaEgreso
+	cacheKeysinCifrar := searchDto.HotelId + searchDto.FechaIngreso.Format(time.RFC3339) + searchDto.FechaEgreso.Format(time.RFC3339)
 	cacheKey := getMD5Hash(cacheKeysinCifrar)
 
 	// 2. Verificar el caché
@@ -123,10 +123,10 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	fechaIngresoFormateada := searchDto.FechaIngreso.Format("2006-01-02")
 	FechaEgresoFormateada := searchDto.FechaEgreso.Format("2006-01-02")
 
-	url = fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, fechaIngresoFormateada, FechaEgresoFormateada)
+	url := fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, fechaIngresoFormateada, FechaEgresoFormateada)
 	// Crear la solicitud HTTP
 
-	req, err = http.NewRequest("GET", url, strings.NewReader(""))
+	req, err := http.NewRequest("GET", url, strings.NewReader(""))
 	if err != nil {
 		fmt.Println("Error creando la solicitud:", err)
 		return false, e.NewBadRequestApiError("Error al crear la solicitud de amadeus")
@@ -136,8 +136,8 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 
 	// Realizar la solicitud
-	client = &http.Client{}
-	resp, err = client.Do(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error haciendo la solicitud:", err)
 		return false, e.NewBadRequestApiError("Error al realizar la solicitud de amadeus")

@@ -43,7 +43,7 @@ func StartDbEngine() {
 	// We need to migrate all classes model.
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Reservas{})
-  db.AutoMigrate(&model.AmadeusMapping{})
+  	db.AutoMigrate(&model.AmadeusMapping{})
 
 
 	log.Info("Finishing Migration Database Tables")

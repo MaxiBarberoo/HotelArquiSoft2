@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"context"
 	"bytes"
 	"encoding/json"
 	e "fichadehotel/Utils"
@@ -117,7 +119,7 @@ func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 	dtoAmadeusMapping.HotelId = hotelDto.Id
 	dtoAmadeusMapping.AmadeusHotelId = hotelDto.AmadeusId
 
-	url := "http://localhost:8020/amadeus/mapping"
+	url := "http://urdnginx:8020/amadeus/mapping"
 
 	jsonData, err := json.Marshal(dtoAmadeusMapping)
 	if err != nil {
@@ -126,6 +128,7 @@ func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Printf("Error: %v", err)
 		return hotelDto, e.NewBadRequestApiError("Error al llamar al servicio de mapeo de ids")
 	}
 
