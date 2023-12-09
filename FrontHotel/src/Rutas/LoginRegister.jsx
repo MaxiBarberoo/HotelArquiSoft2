@@ -7,6 +7,7 @@ function LoginRegister() {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [error, setError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,18 +36,16 @@ function LoginRegister() {
   
         if (authResponse.ok) {
           const responseJson = await authResponse.json();
-          const tokenRecibido = responseJson.token; 
-          setToken(tokenRecibido);
+          setUserId(responseJson.user_id); 
           const isAuthenticated = responseJson.autenticacion;
           console.log(isAuthenticated);
           const isAdmin = responseJson.tipo == 1; 
           setIsAdmin(isAdmin); 
-  
           if (isAuthenticated == 'true') {
             if (isAdmin) {
-              navigate(`/admin/${email}`); 
+              navigate(`/admin/${userId}`); 
             } else {
-              navigate(`/home/${email}`);
+              navigate(`/home/${userId}`);
             }
           } else {
             alert("Credenciales inválidas.");

@@ -1,0 +1,52 @@
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .admin-table th, .admin-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .admin-table th {
+    background-color: #ff0000; /* Fondo rojo para las celdas del encabezado */
+    color: #fff; /* Texto blanco para las celdas del encabezado */
+  }
+  
+  .admin-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .admin-table tr:hover {
+    background-color: #e5e5e5;
+  }
+
+  .scalable-services-section {
+    margin-top: 20px;
+  }
+  
+  .scalable-services-section h3 {
+    color: #ff0000; /* Color rojo para el subtítulo */
+  }
+  
+  .scalable-services-section button {
+    background-color: #ff0000; /* Fondo rojo para el botón */
+    color: #fff; /* Texto blanco para el botón */
+    padding: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .scalable-services-section ul {
+    list-style-type: none; /* Quita los estilos de la lista */
+    padding: 0;
+  }
+  
+  .scalable-services-section li {
+    background-color: #f9f9f9; /* Fondo gris claro para los elementos de la lista */
+    padding: 8px;
+    margin-bottom: 5px;
+  }
+  
