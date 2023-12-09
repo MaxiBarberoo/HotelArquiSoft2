@@ -1,22 +1,66 @@
 package services
 
 import (
-	e "urd/Utils"
-	cacheClient "urd/cache"
-	amadeusMappingClient "urd/clients/amadeus"
-	"urd/dto"
-	"urd/model"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
+	e "urd/Utils"
+	cacheClient "urd/cache"
+	amadeusMappingClient "urd/clients/amadeus"
+	"urd/dto"
+	"urd/model"
 )
 
 type AccessTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	// Agrega otros campos del JSON si es necesario
+}
+
+var accessToken string
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
+}
+func GetTokenAmadeus() e.ApiError {
+	url := "https://test.api.amadeus.com/v1/security/oauth2/token"
+	data := "grant_type=client_credentials&client_id=7uzLTegWNA20dQ3CjwIeG9gNgYbvhhhk&client_secret=7xOMYIvfR8KWChEu"
+	//AGREGAR API KEY Y API SECRET EN CLIENT ID Y CLIENT SECRET RESPECTIVAMENTE
+
+	for true {
+		req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
+		if err != nil {
+			fmt.Println("Error creando la solicitud:", err)
+			return e.NewBadRequestApiError("Error al pedir el token")
+		}
+
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Println("Error haciendo la solicitud:", err)
+			return e.NewBadRequestApiError("Error al pedir el token")
+		}
+		defer resp.Body.Close()
+
+		// Decodificar la respuesta JSON
+		var tokenResponse AccessTokenResponse
+		err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
+		if err != nil {
+			fmt.Println("Error decodificando la respuesta JSON:", err)
+			return e.NewBadRequestApiError("Error al obtener el token")
+		}
+		accessToken = tokenResponse.AccessToken
+		time.Sleep(1500 * time.Second)
+	}
+	return nil
 }
 
 type amadeusMappingService struct{}
@@ -54,16 +98,17 @@ func (s *amadeusMappingService) CreateMapping(amadeusMappingDto dto.AmadeusMappi
 
 func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool, e.ApiError) {
 
-	cacheKey := searchDto.HotelId
+	cacheKeysinCifrar := searchDto.HotelId + searchDto.FechaIngreso + searchDto.FechaEgreso
+	cacheKey := getMD5Hash(cacheKeysinCifrar)
 
 	// 2. Verificar el caché
 	cachedValue := cacheClient.Get(cacheKey)
 	if cachedValue != nil {
 		available, err := strconv.ParseBool(string(cachedValue))
-    if err != nil{
-      fmt.Println(err)
-      return false, e.NewBadRequestApiError("Error al convertir el atributo")
-    }
+		if err != nil {
+			fmt.Println(err)
+			return false, e.NewBadRequestApiError("Error al convertir el atributo")
+		}
 		return available, nil
 	}
 
@@ -72,41 +117,11 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 		return false, e.NewBadRequestApiError("Error al obtener el hotel")
 	}
 
-	url := "https://test.api.amadeus.com/v1/security/oauth2/token"
-	data := "grant_type=client_credentials&client_id=7uzLTegWNA20dQ3CjwIeG9gNgYbvhhhk&client_secret=7xOMYIvfR8KWChEu"
-	//AGREGAR API KEY Y API SECRET EN CLIENT ID Y CLIENT SECRET RESPECTIVAMENTE
+	fmt.Println("Token: " + accessToken)
+	// Hasta aca todo joya papurri
 
-	req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
-	if err != nil {
-		fmt.Println("Error creando la solicitud:", err)
-		return false, e.NewBadRequestApiError("Error al pedir el token")
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error haciendo la solicitud:", err)
-		return false, e.NewBadRequestApiError("Error al pedir el token")
-	}
-	defer resp.Body.Close()
-
-	// Decodificar la respuesta JSON
-	var tokenResponse AccessTokenResponse
-	err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
-	if err != nil {
-		fmt.Println("Error decodificando la respuesta JSON:", err)
-		return false, e.NewBadRequestApiError("Error al obtener el token")
-	}
-
-	// Acceder al access_token
-	accessToken := tokenResponse.AccessToken
-  fmt.Println("Token: " + accessToken)
-  // Hasta aca todo joya papurri
-  
-  fechaIngresoFormateada := searchDto.FechaIngreso.Format("2006-01-02")
-  FechaEgresoFormateada := searchDto.FechaEgreso.Format("2006-01-02")
+	fechaIngresoFormateada := searchDto.FechaIngreso.Format("2006-01-02")
+	FechaEgresoFormateada := searchDto.FechaEgreso.Format("2006-01-02")
 
 	url = fmt.Sprintf("https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=%s&checkInDate=%s&checkOutDate=%s", amadeusMappingDto.AmadeusHotelId, fechaIngresoFormateada, FechaEgresoFormateada)
 	// Crear la solicitud HTTP
@@ -129,9 +144,9 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	}
 	defer resp.Body.Close()
 
-  if resp.StatusCode != http.StatusOK{
-      return false, e.NewBadRequestApiError("La respuesta de amadeus fue distinta a OK")
-  }
+	if resp.StatusCode != http.StatusOK {
+		return false, e.NewBadRequestApiError("La respuesta de amadeus fue distinta a OK")
+	}
 
 	var responseMap map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&responseMap)
@@ -141,7 +156,7 @@ func (s *amadeusMappingService) CheckAvailability(searchDto dto.SearchDto) (bool
 	}
 
 	// Acceder al atributo "available"
-  fmt.Println(responseMap)
+	fmt.Println(responseMap)
 	if data, ok := responseMap["data"].([]interface{}); ok && len(data) > 0 {
 		if offer, ok := data[0].(map[string]interface{}); ok {
 			if available, ok := offer["available"].(bool); ok {
@@ -164,7 +179,7 @@ func (s *amadeusMappingService) GetMappingByHotelId(hotelId string) (dto.Amadeus
 
 	if err != nil {
 		var errorDto dto.AmadeusMappingDto
-    fmt.Println(err)
+		fmt.Println(err)
 		return errorDto, err
 	}
 

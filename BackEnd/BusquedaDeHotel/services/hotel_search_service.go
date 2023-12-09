@@ -8,8 +8,61 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
+
+func Consumer() {
+	conn, err := amqp.Dial("amqp://user:password@rabbitmq:5672/")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello", // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
+
+	for d := range msgs {
+		hotelId := string(d.Body)
+
+		// Update hotel
+		errorSolr := service.HotelSearchService.UpdateHotel(hotelId)
+		if errorSolr != nil {
+			fmt.Println(errorSolr)
+		}
+
+		log.Printf("Received a message with ID: %d", hotelId)
+		// Llamado a actualizar hotel en solr
+		// si llaman metodo gethotelbyId o getHotels ahi llamo
+		// a API de disponibilidad de hoteles para agregar atributo de disponibilidad
+	}
+}
 
 type hotelSearchService struct{}
 
@@ -35,9 +88,9 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 	}
 
 	for i := 0; i < len(hotelsByCity); i++ {
-		url := "http://localhost:8098/amadeus/availability"
+		url := "http://localhost:8020/amadeus/availability"
 
-    searchDto.HotelId = hotelsByCity[i].Id
+		searchDto.HotelId = hotelsByCity[i].Id
 		jsonData, err := json.Marshal(searchDto)
 		if err != nil {
 			return nil, e.NewBadRequestApiError("Error al convertir searchDto a JSON")
@@ -61,19 +114,19 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 		}
 
 		availability, ok := result["availability"].(bool)
-    fmt.Println("Availability: ", availability)
+		fmt.Println("Availability: ", availability)
 		if !ok {
 			return nil, e.NewBadRequestApiError("Availability no es una cadena o no existe en el JSON")
 		}
-    
-    fmt.Println("Is Available: ",availability)
+
+		fmt.Println("Is Available: ", availability)
 		hotelsByCity[i].Availability = availability
 
 	}
 
 	var availableHotels dto.HotelsDto
 	for i := 0; i < len(hotelsByCity); i++ {
-    fmt.Println("Hotel Availability: ", hotelsByCity[i].Availability)
+		fmt.Println("Hotel Availability: ", hotelsByCity[i].Availability)
 		if hotelsByCity[i].Availability == true {
 			availableHotels = append(availableHotels, hotelsByCity[i])
 		}
@@ -84,7 +137,7 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 
 func (s *hotelSearchService) UpdateHotel(hotelId string) e.ApiError {
 
-	url := fmt.Sprintf("http://localhost:8090/hotels/%s", hotelId)
+	url := fmt.Sprintf("http://localhost:8021/hotels/%s", hotelId)
 
 	resp, err := http.Get(url)
 	if err != nil {

@@ -2,13 +2,13 @@ package main
 
 import (
 	app "busquedadehotel/app"
-	controller "busquedadehotel/controller/HotelSearch"
+	service "busquedadehotel/services"
 )
 
 func main() {
 	go app.StartRoute()
 
-	go controller.Consumer()
+	go service.Consumer()
 
-  select{}
+	select {}
 }

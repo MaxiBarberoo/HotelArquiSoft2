@@ -3,57 +3,10 @@ package hotel
 import (
 	"fichadehotel/dto"
 	service "fichadehotel/services"
-	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"time"
-
-	"github.com/streadway/amqp"
 )
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-	}
-}
-
-func SendToQueue(hotelId string) {
-	conn, err := amqp.Dial("amqp://user:password@rabbitmq:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
-
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	failOnError(err, "Failed to declare a queue")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	print(ctx)
-	defer cancel()
-
-	body := hotelId
-	err = ch.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
-}
 
 func GetHotelById(c *gin.Context) {
 	log.Debug("Hotel id to load: " + c.Param("id"))
@@ -87,7 +40,7 @@ func HotelInsert(c *gin.Context) {
 		c.JSON(er.Status(), er)
 		return
 	}
-	SendToQueue(hotelDto.Id)
+	service.SendToQueue(hotelDto.Id)
 }
 
 func UpdateHotel(c *gin.Context) {
@@ -106,5 +59,5 @@ func UpdateHotel(c *gin.Context) {
 		c.JSON(er.Status(), er)
 		return
 	}
-	SendToQueue(hotelDto.Id)
+	service.SendToQueue(hotelDto.Id)
 }
