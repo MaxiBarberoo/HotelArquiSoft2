@@ -11,10 +11,14 @@ function HotelDetalle() {
     const navigate = useNavigate();
     const [hotel, setHotel] = useState(null);
     const [amenities, setAmenities] = useState([]);
+    const usuarioValidado = localStorage.getItem('usuarioValidado');
 
     useEffect(() => {
+        if (!usuarioValidado) {
+            navigate(`/home`);
+        }
         // Define la URL y realiza la solicitud
-        const url = `http://fichadehotelnginx:8021/hotels/${hotelId}`; 
+        const url = `http://localhost:8021/hotels/${hotelId}`;
 
         fetch(url)
             .then(response => {
@@ -38,7 +42,7 @@ function HotelDetalle() {
     }
 
     const handleReserva = () => {
-        const url = `http://urdnginx:8020/reservas`;
+        const url = `http://localhost:8020/reservas`;
         const userId = 1;
 
         // Creamos el cuerpo de la solicitud
@@ -56,20 +60,20 @@ function HotelDetalle() {
             },
             body: JSON.stringify(reserva)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al crear la reserva.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Reserva creada con éxito.');
-            // Aquí puedes manejar acciones post-reserva, como redireccionar a una página de confirmación, mostrar un mensaje, etc.
-        })
-        .catch(error => {
-            alert('Ha habido un error al realizar su reserva. Inténtelo nuevamente.');
-            // Maneja el error, mostrando un mensaje al usuario o lo que consideres necesario.
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al crear la reserva.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Reserva creada con éxito.');
+                // Aquí puedes manejar acciones post-reserva, como redireccionar a una página de confirmación, mostrar un mensaje, etc.
+            })
+            .catch(error => {
+                alert('Ha habido un error al realizar su reserva. Inténtelo nuevamente.');
+                // Maneja el error, mostrando un mensaje al usuario o lo que consideres necesario.
+            });
     };
 
     const handleHome = () => {

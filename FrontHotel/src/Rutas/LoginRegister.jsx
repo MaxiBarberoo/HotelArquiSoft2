@@ -15,37 +15,39 @@ function LoginRegister() {
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    if (email.trim() == '' || contraseña.trim() == ''){
+    if (email.trim() == '' || contraseña.trim() == '') {
       alert("Uno de los campos se encuentra vacío, por favor completelos e intente nuevamente.");
       setEmail('');
       setContraseña('');
-    } else{
+    } else {
       const userData = {
         user_email: email,
         password: contraseña,
       };
-  
+
       try {
-        const authResponse = await fetch('http://urdnginx:8020/users/auth', {
+        const authResponse = await fetch('http://localhost:8020/users/auth', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
         });
-  
+
         if (authResponse.ok) {
           const responseJson = await authResponse.json();
-          setUserId(responseJson.user_id); 
+          setUserId(responseJson.user_id);
           const isAuthenticated = responseJson.autenticacion;
           console.log(isAuthenticated);
-          const isAdmin = responseJson.tipo == 1; 
-          setIsAdmin(isAdmin); 
+          const isAdmin = responseJson.tipo == 1;
+          setIsAdmin(isAdmin);
           if (isAuthenticated == 'true') {
             if (isAdmin) {
-              navigate(`/admin/${userId}`); 
+              localStorage.setItem('usuarioValidado', 'true');
+              navigate(`/admin/${email}`);
             } else {
-              navigate(`/home/${userId}`);
+              localStorage.setItem('usuarioValidado', 'true');
+              navigate(`/home/${email}`);
             }
           } else {
             alert("Credenciales inválidas.");
@@ -64,29 +66,29 @@ function LoginRegister() {
 
   const handleRegisterSubmit = async (event) => {
     event.preventDefault()
-    if (email.trim() === '' || contraseña.trim() === '' || nombre.trim() === '' || apellido.trim() === ''){
+    if (email.trim() === '' || contraseña.trim() === '' || nombre.trim() === '' || apellido.trim() === '') {
       alert("Uno de los campos se encuentra vacío, por favor completelos e intente nuevamente.");
       setNombre('');
       setApellido('');
       setEmail('');
       setContraseña('');
-    } else{
+    } else {
       const userData = {
         name: nombre,
         last_name: apellido,
         user_email: email,
         password: contraseña,
       };
-  
+
       try {
-        const response = await fetch('http://urdnginx:8020/users', {
+        const response = await fetch('http://localhost:8020/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
         });
-  
+
         if (response.ok) {
           alert('El usuario ha sido registrado exitosamente');
           window.location.reload();
@@ -100,6 +102,10 @@ function LoginRegister() {
     }
   }
 
+  useEffect(() => {
+    localStorage.setItem('usuarioValidado', 'false');
+  }, []);
+
   return (
     <div className="main-loginregister-container">
       <Header />
@@ -110,17 +116,17 @@ function LoginRegister() {
             <form onSubmit={handleRegisterSubmit}>
               <label className='signuplabel' for="chk" aria-hidden="true">Sign up</label>
               <input className='signupnombre' type="text" name="txt" placeholder="Nombre" required="" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-              <input className='signupapellido' type="text" name="txt" placeholder="Apellido" required="" value={apellido} onChange={(e) => setApellido(e.target.value)}/>
-              <input className='signupemail' type="email" name="email" placeholder="Email" required="" value={email}  onChange={(e) => setEmail(e.target.value)}/>
-              <input className='signupcontra' type="password" name="pswd" placeholder="Contraseña" required="" value={contraseña} onChange={(e) => setContraseña(e.target.value)}/>
+              <input className='signupapellido' type="text" name="txt" placeholder="Apellido" required="" value={apellido} onChange={(e) => setApellido(e.target.value)} />
+              <input className='signupemail' type="email" name="email" placeholder="Email" required="" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className='signupcontra' type="password" name="pswd" placeholder="Contraseña" required="" value={contraseña} onChange={(e) => setContraseña(e.target.value)} />
               <button className='sign' type="submit">Sign up</button>
             </form>
           </div>
           <div className="login">
             <form onSubmit={handleLoginSubmit}>
               <label className='loginlabel' for="chk" aria-hidden="true">Login</label>
-              <input className='loginemail' type="email" name="email" placeholder="Email" required="" value={email} onChange={(e) => setEmail(e.target.value)}/>
-              <input className='logincontra' type="password" name="pswd" placeholder="Contraseña" required="" value={contraseña} onChange={(e) => setContraseña(e.target.value)}/>
+              <input className='loginemail' type="email" name="email" placeholder="Email" required="" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className='logincontra' type="password" name="pswd" placeholder="Contraseña" required="" value={contraseña} onChange={(e) => setContraseña(e.target.value)} />
               <button className='log' type="submit">Login</button>
             </form>
           </div>

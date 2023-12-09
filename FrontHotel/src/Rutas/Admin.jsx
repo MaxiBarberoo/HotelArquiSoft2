@@ -6,8 +6,12 @@ function Admin() {
     const [estadisticas, setEstadisticas] = useState([]);
     const [serviciosEscalables, setServiciosEscalables] = useState([]);
     const [contenedoresSeleccionados, setContenedoresSeleccionados] = useState([]);
+    const usuarioValidado = localStorage.getItem('usuarioValidado');
 
     useEffect(() => {
+        if (!usuarioValidado) {
+            navigate(`/home`);
+        }
         // Llamar a la API para obtener estadísticas cuando el componente se monta
         fetch("http://localhost:8059/stats")  // Actualiza la URL con el puerto correcto
             .then(response => response.json())
@@ -97,7 +101,7 @@ function Admin() {
                         <li key={servicio}>{servicio}</li>
                     ))}
                 </ul>
-            </div>          
+            </div>
         </div>
     );
 }

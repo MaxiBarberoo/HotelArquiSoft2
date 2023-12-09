@@ -9,11 +9,11 @@ services:
     environment:
       MYSQL_DATABASE: usuarios_reserva_disponibilidad
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_TCP_PORT: 3306
+      MYSQL_TCP_PORT: 3308
     ports:
-      - "3306:3306"
+      - "3308:3308"
     expose:
-      - 3306
+      - 3308
     healthcheck:
       test:
         [
@@ -122,7 +122,7 @@ services:
   searchnginx:
     image: nginx:latest
     volumes:
-      - ./BackEnd\usuarios-reserva-disponibilidad\nginx\nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./BackEnd/BusquedaDeHotel/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "8022:8022"
     depends_on:

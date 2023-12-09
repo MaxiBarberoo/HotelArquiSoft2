@@ -13,6 +13,7 @@ function Home() {
   const [ciudad, setCiudad] = useState(null);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
   const navigate = useNavigate();
+  const usuarioValidado = localStorage.getItem('usuarioValidado');
 
   const handleFechaDesdeChange = (date) => {
     setFechaDesde(date);
@@ -33,7 +34,7 @@ function Home() {
       alert("Debes completar los campos de fecha y de ciudad.");
     } else {
       // Define la URL y los parámetros de la solicitud
-      const url = 'http://searchnginx:8022/hotels';
+      const url = 'http://localhost:8022/hotels';
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,6 +68,12 @@ function Home() {
       `/detalle/${props.hotelId}/${props.fechaDesde}/${props.fechaHasta}`
     );
   }
+
+  useEffect(() => {
+    if (!usuarioValidado) {
+      navigate(`/home`);
+    }
+  }, []);
 
   return (
     <div>

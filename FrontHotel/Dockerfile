@@ -1,5 +1,5 @@
 FROM node
-WORKDIR /FrontEnd
+WORKDIR /FrontHotel
 COPY package.json .
 COPY package-lock.json ./
 COPY ./ ./
