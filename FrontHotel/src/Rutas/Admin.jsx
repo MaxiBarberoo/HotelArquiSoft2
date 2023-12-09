@@ -6,7 +6,6 @@ function Admin() {
     const [estadisticas, setEstadisticas] = useState([]);
     const [serviciosEscalables, setServiciosEscalables] = useState([]);
     const [contenedoresSeleccionados, setContenedoresSeleccionados] = useState([]);
-    const [deleteSuccessMessage, setDeleteSuccessMessage] = useState(null);
 
     useEffect(() => {
         // Llamar a la API para obtener estadísticas cuando el componente se monta

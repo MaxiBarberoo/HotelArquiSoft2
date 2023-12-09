@@ -26,7 +26,7 @@ function LoginRegister() {
       };
   
       try {
-        const authResponse = await fetch('http://localhost:8090/users/auth', {
+        const authResponse = await fetch('http://urdnginx:8020/users/auth', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ function LoginRegister() {
       };
   
       try {
-        const response = await fetch('http://localhost:8090/users', {
+        const response = await fetch('http://urdnginx:8020/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

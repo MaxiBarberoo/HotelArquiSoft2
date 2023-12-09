@@ -14,7 +14,7 @@ function HotelDetalle() {
 
     useEffect(() => {
         // Define la URL y realiza la solicitud
-        const url = `http://localhost:8090/hotels/${hotelId}`; 
+        const url = `http://fichadehotelnginx:8021/hotels/${hotelId}`; 
 
         fetch(url)
             .then(response => {
@@ -38,7 +38,7 @@ function HotelDetalle() {
     }
 
     const handleReserva = () => {
-        const url = `http://localhost:8098/reservas`;
+        const url = `http://urdnginx:8020/reservas`;
         const userId = 1;
 
         // Creamos el cuerpo de la solicitud
