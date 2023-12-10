@@ -5,31 +5,36 @@ import (
 	dto "busquedadehotel/dto"
 	"fmt"
 	solr "github.com/rtt/Go-Solr"
+	ClienteSolr "busquedadehotel/solrSingleton"
 )
 
 func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
-	s, err := solr.Init("solr", 8983, "Hotels")
-
-	if err != nil {
-		fmt.Println(err)
-		return e.NewBadRequestApiError("Error al conectarse a Solr")
-	}
+	fmt.Println("UpdateHotel Client running\n")
 
 	// build an update document, in this case adding two documents
-	f := map[string]interface{}{
+	document := map[string]interface{}{
 		"add": []interface{}{
-			map[string]interface{}{"hotel_id": hotelDto.Id, "name": hotelDto.Name, "ciudad": hotelDto.Ciudad, "cantHabitaciones": hotelDto.CantHabitaciones, "descripcion": hotelDto.Desc, "amenities": hotelDto.Amenities},
+			map[string]interface{}{
+				"hotel_id": hotelDto.Id, 
+				"name": hotelDto.Name, 
+				"ciudad": hotelDto.Ciudad, 
+				"cantHabitaciones": hotelDto.CantHabitaciones, 
+				"descripcion": hotelDto.Desc, 
+				"amenities": hotelDto.Amenities},
 		},
 	}
-
+	fmt.Printf("%v\n", document)
 	// send off the update (2nd parameter indicates we also want to commit the operation)
-	resp, err := s.Update(f, true)
+	resp, err := ClienteSolr.ClienteSolr.Update(document, true)
 
 	if err != nil {
-		return e.NewBadRequestApiError("Error al guardar el hotel en Solr")
+		fmt.Println("error =>", err)
+		return e.NewBadRequestApiError("Error al guardar documentos en solr") 
+	} else {
+		fmt.Println("resp =>", resp.String())
 	}
 
-	fmt.Println("Solr response: ", resp)
+	
 	return nil
 }
 

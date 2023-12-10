@@ -107,6 +107,7 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 
 func (s *hotelSearchService) UpdateHotel(hotelId string) e.ApiError {
 
+	fmt.Println("Service UpdateHotel Running\n")
 	url := fmt.Sprintf("http://fichadehotelnginx:8021/hotels/%s", hotelId)
 
 	resp, err := http.Get(url)
@@ -126,6 +127,7 @@ func (s *hotelSearchService) UpdateHotel(hotelId string) e.ApiError {
 		return e.NewBadRequestApiError("Error al extraer el json")
 	}
 
+	fmt.Println("Service UpdateHotel antes de llamado a client \n")
 	errSolr := hotelSearchClient.UpdateHotel(hotel)
 	if err != nil {
 		return errSolr
