@@ -3,8 +3,13 @@ package controller
 import (
 	"AutoScaling/service"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
+
+type servicio struct {
+	Servicio string `json:"servicio"`
+}
 
 func GetServicesAndStats(c *gin.Context) {
 	dtoEstadisticas, err := service.AutoScalingService.GetServicesAndStats()
@@ -17,9 +22,16 @@ func GetServicesAndStats(c *gin.Context) {
 }
 
 func GetStatsByService(c *gin.Context) {
-	servicio := c.Param("servicio")
+	var serv servicio
+	err := c.BindJSON(&serv)
 
-	dtoEstadisticas, err := service.AutoScalingService.GetStatsByService(servicio)
+	if err != nil {
+		log.Error(err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	dtoEstadisticas, err := service.AutoScalingService.GetStatsByService(serv.Servicio)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -31,16 +43,23 @@ func GetStatsByService(c *gin.Context) {
 
 func ScaleService(c *gin.Context) {
 
-	servicio := c.Param("servicio")
+	var serv servicio
+	err := c.BindJSON(&serv)
 
-	numInstancias, err := service.AutoScalingService.ScaleService(servicio)
+	if err != nil {
+		log.Error(err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	numInstancias, err := service.AutoScalingService.ScaleService(serv.Servicio)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"servicio": servicio,
+	c.JSON(http.StatusOK, gin.H{"servicio": serv.Servicio,
 		"instancias": numInstancias,
 	})
 }
