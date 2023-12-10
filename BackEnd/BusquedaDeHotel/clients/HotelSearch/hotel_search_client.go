@@ -3,170 +3,178 @@ package clients
 import (
 	e "busquedadehotel/Utils"
 	dto "busquedadehotel/dto"
+	"bytes"
+	"encoding/json"
 	"fmt"
-	solr "github.com/rtt/Go-Solr"
-	ClienteSolr "busquedadehotel/solrSingleton"
+	"net/http"
+	"time"
 )
 
 func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
 	fmt.Println("UpdateHotel Client running\n")
 
-	// build an update document, in this case adding two documents
+	// Crear el documento a enviar a Solr
 	document := map[string]interface{}{
 		"add": []interface{}{
 			map[string]interface{}{
-				"hotel_id": hotelDto.Id, 
-				"name": hotelDto.Name, 
-				"ciudad": hotelDto.Ciudad, 
-				"cantHabitaciones": hotelDto.CantHabitaciones, 
-				"descripcion": hotelDto.Desc, 
-				"amenities": hotelDto.Amenities},
+				"hotel_id":         hotelDto.Id,
+				"name":             hotelDto.Name,
+				"ciudad":           hotelDto.Ciudad,
+				"cantHabitaciones": hotelDto.CantHabitaciones,
+				"descripcion":      hotelDto.Desc,
+				"amenities":        hotelDto.Amenities,
+			},
 		},
 	}
 	fmt.Printf("%v\n", document)
-	// send off the update (2nd parameter indicates we also want to commit the operation)
-	resp, err := ClienteSolr.ClienteSolr.Update(document, true)
 
+	// Convertir el documento a formato JSON
+	jsonDocument, err := json.Marshal(document)
 	if err != nil {
-		fmt.Println("error =>", err)
-		return e.NewBadRequestApiError("Error al guardar documentos en solr") 
-	} else {
-		fmt.Println("resp =>", resp.String())
+		return e.NewBadRequestApiError("Error al convertir documento a JSON")
 	}
 
-	
+	// Establecer la URL de Solr donde se enviarán los datos
+	solrURL := "http://localhost:8983/solr/Hotels/update?commit=true" // Reemplaza con la URL correcta de tu colección
+
+	// Crear una solicitud HTTP POST para enviar el documento a Solr
+	req, err := http.NewRequest("POST", solrURL, bytes.NewBuffer(jsonDocument))
+	if err != nil {
+		return e.NewBadRequestApiError("Error al crear la solicitud HTTP")
+	}
+
+	// Establecer el encabezado Content-Type
+	req.Header.Set("Content-Type", "application/json")
+
+	// Realizar la solicitud HTTP
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return e.NewBadRequestApiError("Error al realizar la solicitud HTTP")
+	}
+	defer resp.Body.Close()
+
+	// Verificar el código de respuesta de Solr
+	if resp.StatusCode != http.StatusOK {
+		return e.NewBadRequestApiError("Solr respondió con un código de estado no válido")
+	}
+
+	// Leer la respuesta de Solr
+	var result map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return e.NewBadRequestApiError("Error al decodificar la respuesta de Solr")
+	}
+
+	// Imprimir la respuesta de Solr
+	fmt.Println("Respuesta de Solr:", result)
+
 	return nil
 }
 
 func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError) {
-	s, err := solr.Init("solr", 8983, "Hotels")
+	// Crear la consulta a Solr con parámetros de búsqueda
+	solrURL := fmt.Sprintf("http://localhost:8983/solr/Hotels/select?q=ciudad:%s&facet.field=hotel_id&facet.field=name&facet.field=cantHabitaciones&facet.field=descripcion&facet.field=amenities&facet=true&rows=100000", searchDto.Ciudad)
 
+	// Realizar la solicitud GET a Solr
+	resp, err := http.Get(solrURL)
 	if err != nil {
-		fmt.Println(err)
-		return nil, e.NewBadRequestApiError("Error al conectarse a solr")
+		return nil, e.NewBadRequestApiError("Error al realizar la solicitud HTTP a Solr")
+	}
+	defer resp.Body.Close()
+
+	// Verificar el código de estado de la respuesta HTTP
+	if resp.StatusCode != http.StatusOK {
+		return nil, e.NewBadRequestApiError("Solr respondió con un código de estado no válido")
 	}
 
-	// Build a query object
-	// Here we are specifying a 'q' param,
-	// rows, faceting and facet.fields
-	q := solr.Query{
-		Params: solr.URLParamMap{
-			"q":           []string{"ciudad:" + searchDto.Ciudad},
-			"facet.field": []string{"hotel_id", "name", "cantHabitaciones", "descripcion", "amenities"},
-			"facet":       []string{"true"},
-		},
-		Rows: 100000,
-	}
-
-	// perform the query, checking for errors
-	res, err := s.Select(&q)
-
+	// Decodificar la respuesta JSON de Solr
+	var solrResponse map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&solrResponse)
 	if err != nil {
-		fmt.Println(err)
-		return nil, e.NewBadRequestApiError("Error al conectarse al buscar los hoteles")
+		return nil, e.NewBadRequestApiError("Error al decodificar la respuesta JSON de Solr")
 	}
 
-	// grab results for ease of use later on
-	results := res.Results
-	var solrDto dto.SolrDto
-
+	// Procesar los resultados de Solr
 	var hotelsByCity dto.HotelsDto
-	var hotelDto dto.HotelDto
-	for i := 0; i < results.Len(); i++ {
-		// Asigna el valor del campo "hotel_id" a una variable de tipo interface{}
-		hotelIdInterface := results.Get(i).Field("hotel_id")
 
-		// Verifica si el valor es un slice de interfaces
-		if hotelIds, ok := hotelIdInterface.([]interface{}); ok {
-			// Inicializa un nuevo slice de strings
-			var hotelIdStrings []string
+	response := solrResponse["response"].(map[string]interface{})
+	docs := response["docs"].([]interface{})
 
-			// Convierte cada elemento a string
-			for _, id := range hotelIds {
-				if strId, ok := id.(string); ok {
-					hotelIdStrings = append(hotelIdStrings, strId)
-				}
+	for _, doc := range docs {
+		hotel := doc.(map[string]interface{})
+
+		var hotelDto dto.HotelDto
+		hotelDto.Ciudad = searchDto.Ciudad
+
+		if val, ok := hotel["hotel_id"].([]interface{}); ok {
+			if str, ok := val[0].(string); ok {
+				hotelDto.Id = str
 			}
-
-			// Asigna el nuevo slice de strings a tu variable solrDto.Id
-			solrDto.Id = hotelIdStrings
 		} else {
 			// Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("ID is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
-		hotelDto.Id = solrDto.Id[0]
 
-		nameInterface := results.Get(i).Field("name")
-		if names, ok := nameInterface.([]interface{}); ok {
-			// Inicializa un nuevo slice de strings
-			var nameStrings []string
-
-			// Convierte cada elemento a string
-			for _, name := range names {
-				if strName, ok := name.(string); ok {
-					nameStrings = append(nameStrings, strName)
-				}
+		if val, ok := hotel["name"].([]interface{}); ok {
+			if str, ok := val[0].(string); ok {
+				hotelDto.Name = str
 			}
-
-			// Asigna el nuevo slice de strings a tu variable solrDto.Id
-			solrDto.Name = nameStrings
 		} else {
 			// Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("Name is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
-		fmt.Println(solrDto.Name[0])
-		hotelDto.Name = solrDto.Name[0]
 
-		hotelDescInterface := results.Get(i).Field("descripcion")
-		if descs, ok := hotelDescInterface.([]interface{}); ok {
-			// Inicializa un nuevo slice de strings
-			var descStrings []string
-
-			// Convierte cada elemento a string
-			for _, desc := range descs {
-				if strDesc, ok := desc.(string); ok {
-					descStrings = append(descStrings, strDesc)
+		if val, ok := hotel["cantHabitaciones"].([]interface{}); ok {
+			if num, ok := val[0].(json.Number); ok {
+				if n, err := num.Int64(); err == nil {
+					hotelDto.CantHabitaciones = int(n)
 				}
 			}
+		} else {
+			// Maneja el caso en que el tipo no sea el esperado
+			fmt.Println("Canthabitaciones is not an int!")
+			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
+		}
 
-			// Asigna el nuevo slice de strings a tu variable solrDto.Id
-			solrDto.Desc = descStrings
+		if val, ok := hotel["descripcion"].([]interface{}); ok {
+			if str, ok := val[0].(string); ok {
+				hotelDto.Desc = str
+			}
 		} else {
 			// Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("Descripcion is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
-		fmt.Println(solrDto.Desc[0])
-		hotelDto.Desc = solrDto.Desc[0]
 
-		hotelAmenitiesInterface := results.Get(i).Field("amenities")
-		if amenities, ok := hotelAmenitiesInterface.([]interface{}); ok {
-			// Inicializa un nuevo slice de strings
-			var amenitiesStrings []string
-
-			// Convierte cada elemento a string
-			for _, amenitie := range amenities {
-				if strAmenitie, ok := amenitie.(string); ok {
-					amenitiesStrings = append(amenitiesStrings, strAmenitie)
+		if val, ok := hotel["amenities"].([]interface{}); ok {
+			var amenitiesSlice []string
+			for _, v := range val {
+				if subVal, ok := v.(string); ok {
+					amenitiesSlice = append(amenitiesSlice, subVal)
 				}
-
 			}
-
-			// Asigna el nuevo slice de strings a tu variable solrDto.Id
-			solrDto.Amenities = amenitiesStrings
+			hotelDto.Amenities = amenitiesSlice
 		} else {
 			// Maneja el caso en que el tipo no sea el esperado
-			fmt.Println("Amenities is not a string!")
+			fmt.Println("Amenitis is not a string array!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
-		fmt.Println(solrDto.Amenities[0])
-		hotelDto.Amenities = solrDto.Amenities
-		hotelDto.Ciudad = searchDto.Ciudad
 
+		if val, ok := hotel["availability"].([]interface{}); ok {
+			if avail, ok := val[0].(bool); ok {
+				hotelDto.Availability = avail
+			}
+		} else {
+			// Maneja el caso en que el tipo no sea el esperado
+			fmt.Println("Availability is not bool!")
+			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
+		}
+
+		// Agregar hotelDto a hotelsByCity
 		hotelsByCity = append(hotelsByCity, hotelDto)
-
 	}
 
 	return hotelsByCity, nil
