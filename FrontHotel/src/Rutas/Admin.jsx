@@ -28,13 +28,14 @@ function Admin() {
     const handleCheckboxChange = (id) => {
         // Actualizar la lista de contenedores seleccionados
         setContenedoresSeleccionados((prevSelected) => {
-            if (prevSelected.includes(id)) {
+            if (prevSelected.has(id)) {
                 // Desmarcar el checkbox si ya está seleccionado
-                return prevSelected.filter((selectedId) => selectedId !== id);
+                prevSelected.delete(id);
             } else {
                 // Marcar el checkbox si no está seleccionado
-                return [...prevSelected, id];
+                prevSelected.add(id);
             }
+            return new Set(prevSelected); // Garantizar la inmutabilidad
         });
     };
 
@@ -61,10 +62,9 @@ function Admin() {
         <div>
             <Header />
             <h2>Módulo de administrador</h2>
-            <table className="tabla-servicios">
+            <table className="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Uso de CPU</th>
                         <th>Uso de Memoria</th>
@@ -75,7 +75,6 @@ function Admin() {
                 <tbody>
                     {estadisticas.map(estadistica => (
                         <tr key={estadistica.Id}>
-                            <td>{estadistica.Id}</td>
                             <td>{estadistica.Name}</td>
                             <td>{estadistica.CPUPerc}</td>
                             <td>{estadistica.MemPerc}</td>
@@ -84,7 +83,7 @@ function Admin() {
                                 <input
                                     type="checkbox"
                                     onChange={() => handleCheckboxChange(estadistica.Id)}
-                                    checked={contenedoresSeleccionados.includes(estadistica.Id)}
+                                    checked={contenedoresSeleccionados.has(estadistica.Id)}
                                 />
                             </td>
                         </tr>
