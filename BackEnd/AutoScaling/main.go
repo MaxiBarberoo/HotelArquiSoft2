@@ -12,5 +12,6 @@ func main() {
 		go service.AutoScalingService.AutoScaleContinuously(servicio)
 	}
 
-	go app.StartRoute()
+	app.StartRoute()
+
 }

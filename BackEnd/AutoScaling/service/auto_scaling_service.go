@@ -35,7 +35,7 @@ func init() {
 	AutoScalingService = &autoScalingService{}
 }
 
-var serviciosEscalables = []string{"hotel", "search", "user-reservation"}
+var serviciosEscalables = []string{"fichadehotel", "busquedadehotel", "urd"}
 
 func (a autoScalingService) GetServicesAndStats() (dto.EstadisticasDtos, e.ApiError) {
 	var dtosEstadisticas dto.EstadisticasDtos
@@ -142,14 +142,14 @@ func (a autoScalingService) ScaleService(servicio string) (int, e.ApiError) {
 
 	currQty := len(ids)
 
-	scaleCommand := exec.Command("docker-compose", "-f", "../docker-compose.yml", "up", "-d", "--scale", fmt.Sprintf("%s=%d", servicio, currQty+1))
+	scaleCommand := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "up", "-d", "--scale", fmt.Sprintf("%s=%d", servicio, currQty+1))
 
 	er := scaleCommand.Run()
 	if er != nil {
 		return 0, e.NewBadRequestApiError(er.Error())
 	}
 
-	restartCommand := exec.Command("docker-compose", "-f", "../docker-compose.yml", "restart", fmt.Sprintf("%s%s", servicio, "nginx"))
+	restartCommand := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "restart", fmt.Sprintf("%s%s", servicio, "nginx"))
 	er = restartCommand.Run()
 	if er != nil {
 		return 0, e.NewBadRequestApiError(er.Error())
@@ -165,12 +165,12 @@ func (a autoScalingService) DeleteContainer(id string) e.ApiError {
 	}
 
 	if !a.checkServiceExistenceAndScalability(service) {
-		return e.NewBadRequestApiError("you cant delete this service's containers")
+		return e.NewBadRequestApiError("No se puede eliminar este contenedor")
 	}
 
 	containers, err := a.getContainersIdsByService(service)
 	if len(containers) == 1 {
-		return e.NewBadRequestApiError("there has to be at least one container running for each service")
+		return e.NewBadRequestApiError("Debe haber al menos un contenedor del microservicio")
 	}
 
 	deleteCommand := exec.Command("docker", "rm", "-f", id)
@@ -179,7 +179,7 @@ func (a autoScalingService) DeleteContainer(id string) e.ApiError {
 		return e.NewBadRequestApiError(er.Error())
 	}
 
-	restartCommand := exec.Command("docker-compose", "-f", "../docker-compose.yml", "restart", fmt.Sprintf("%s%s", service, "nginx"))
+	restartCommand := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "restart", fmt.Sprintf("%s%s", service, "nginx"))
 	er = restartCommand.Run()
 	if er != nil {
 		return e.NewBadRequestApiError(er.Error())
@@ -189,7 +189,7 @@ func (a autoScalingService) DeleteContainer(id string) e.ApiError {
 }
 
 func (a autoScalingService) getContainersIdsByService(servicio string) ([]string, e.ApiError) {
-	command := exec.Command("docker-compose", "-f", "../docker-compose.yml", "ps", "-q", servicio)
+	command := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "ps", "-q", servicio)
 	output, err := command.Output()
 	if err != nil {
 		log.Error(err)
@@ -208,7 +208,7 @@ func (a autoScalingService) getContainerServiceById(id string) (string, e.ApiErr
 	output, err := command.Output()
 	if err != nil {
 		log.Error(err)
-		return "", e.NewBadRequestApiError("container not found")
+		return "", e.NewBadRequestApiError("No se ha encontrado el contenedor")
 	}
 
 	var containerService struct {
@@ -225,23 +225,6 @@ func (a autoScalingService) getContainerServiceById(id string) (string, e.ApiErr
 }
 
 func (a autoScalingService) checkServiceExistenceAndScalability(servicio string) bool {
-	command := exec.Command("docker-compose", "-f", "../docker-compose.yml", "config", "--services")
-	output, err := command.Output()
-	if err != nil {
-		log.Error(err)
-		return false
-	}
-
-	services := strings.TrimSpace(string(output))
-	servicesArray := strings.Split(services, "\n")
-
-	for _, serv := range servicesArray {
-
-		if serv == servicio {
-			return true
-		}
-	}
-
 	for _, serv := range serviciosEscalables {
 		if serv == servicio {
 			return true
@@ -255,14 +238,14 @@ func (a autoScalingService) GetServiciosEscalables() []string {
 }
 
 func (a autoScalingService) AutoScaleContinuously(servicio string) {
-	log.Infof("Autoscaling %s", servicio)
+	log.Infof("Autoescalando %s", servicio)
 
 	for {
 		var avgCpuUsage float64
 
 		stats, err := a.GetStatsByService(servicio)
 		if err != nil {
-			log.Errorf("Error getting %s stats: %v", servicio, err)
+			log.Errorf("Error obteniendo las estadisticas del servicio %s: %v", servicio, err)
 			continue
 		}
 
@@ -273,7 +256,7 @@ func (a autoScalingService) AutoScaleContinuously(servicio string) {
 			stringCPU := strings.Trim(container.CPUPerc, "%")
 			intCPU, err := strconv.ParseFloat(stringCPU, 64)
 			if err != nil {
-				log.Errorf("Error parsing string: %v", err)
+				log.Errorf("Error al convertir el string: %s", err)
 				continue
 			}
 
@@ -285,21 +268,21 @@ func (a autoScalingService) AutoScaleContinuously(servicio string) {
 		if avgCpuUsage >= 60 || containersAmount < 2 {
 			instances, err := a.ScaleService(servicio)
 			if err != nil {
-				log.Errorf("Error creating %s container: %s", servicio, err)
+				log.Errorf("Error al crear el contenedor %s: %s", servicio, err)
 				continue
 			}
 
-			log.Infof("Scaling up %s to %d instances", servicio, instances)
+			log.Infof("Escalando el microservicio %s a %d instancias", servicio, instances)
 
 		} else if avgCpuUsage < 20 && containersAmount > 2 {
 
 			err = a.DeleteContainer(stats[containersAmount-1].Id)
 			if err != nil {
-				log.Errorf("Error deleting %s container: %s", servicio, err)
+				log.Errorf("Error al eliminar el contenedor del microservicio %s: %s", servicio, err)
 				continue
 			}
 
-			log.Infof("Scaling down %s to %d instances", servicio, containersAmount-1)
+			log.Infof("Bajando instancias del microservicio %s a %d instancias", servicio, containersAmount-1)
 		}
 
 		time.Sleep(20 * time.Second)
