@@ -38,6 +38,8 @@ func (s *hotelSearchService) GetHotelsByDateAndCity(searchDto dto.SearchDto) (dt
 		return errorHotel, e.NewBadRequestApiError("Hotel not found")
 	}
 
+	fmt.Printf("Hoteles encontrados: %v\n", hotelsByCity)
+
 	for i := 0; i < len(hotelsByCity); i++ {
 		wg.Add(1) // Añade 1 al WaitGroup por cada goroutine
 

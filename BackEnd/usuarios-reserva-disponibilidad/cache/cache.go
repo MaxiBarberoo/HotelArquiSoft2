@@ -10,7 +10,7 @@ var (
 )
 
 func InitCache() {
-	cacheClient = memcache.New("localhost:11211")
+	cacheClient = memcache.New("memcached:11211")
 }
 
 func Get(key string) []byte {
