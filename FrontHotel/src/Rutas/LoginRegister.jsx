@@ -7,10 +7,8 @@ function LoginRegister() {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
-  const [userId, setUserId] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [error, setError] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   const handleLoginSubmit = async (event) => {
@@ -36,18 +34,18 @@ function LoginRegister() {
 
         if (authResponse.ok) {
           const responseJson = await authResponse.json();
-          setUserId(responseJson.user_id);
           const isAuthenticated = responseJson.autenticacion;
           console.log(isAuthenticated);
           const isAdmin = responseJson.tipo == 1;
-          setIsAdmin(isAdmin);
+          const userId = responseJson.user_id;
+
           if (isAuthenticated == 'true') {
             if (isAdmin) {
               localStorage.setItem('usuarioValidado', 'true');
               navigate(`/admin/${email}`);
             } else {
               localStorage.setItem('usuarioValidado', 'true');
-              navigate(`/home/${email}`);
+              navigate(`/home/${email}/${userId}`);
             }
           } else {
             alert("Credenciales inválidas.");

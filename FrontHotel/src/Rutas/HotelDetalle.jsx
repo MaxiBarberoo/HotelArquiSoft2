@@ -3,11 +3,37 @@ import { useNavigate } from "react-router-dom"
 import '../Stylesheet/HotelDetalle.css'
 import Header from '../Componentes/Header'
 import { useParams } from 'react-router-dom';
+import { parse, formatISO } from 'date-fns';
+
+function convertirAFechaISO(fechaString) {
+  try {
+    // Eliminar la parte de la zona horaria en paréntesis para facilitar el parseo
+    const fechaSinZona = fechaString.replace(/\s\(.*\)$/, "");
+
+    // Convertir la cadena a un objeto Date
+    const fecha = new Date(fechaSinZona);
+
+    // Formatear la fecha manualmente a ISO 8601
+    const año = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const horas = fecha.getHours().toString().padStart(2, '0');
+    const minutos = fecha.getMinutes().toString().padStart(2, '0');
+    const segundos = fecha.getSeconds().toString().padStart(2, '0');
+    const milisegundos = fecha.getMilliseconds().toString().padStart(3, '0');
+
+    return `${año}-${mes}-${dia}T${horas}:${minutos}:${segundos}.${milisegundos}Z`;
+  } catch (error) {
+    console.error("Error al convertir la fecha:", error);
+    return '';
+  }
+}
 
 function HotelDetalle() {
     const { hotelId } = useParams();
     const { fechaDesde } = useParams();
     const { fechaHasta } = useParams();
+    const { userId } = useParams();
     const navigate = useNavigate();
     const [hotel, setHotel] = useState(null);
     const [amenities, setAmenities] = useState([]);
@@ -15,7 +41,7 @@ function HotelDetalle() {
 
     useEffect(() => {
         if (!usuarioValidado) {
-            navigate(`/home`);
+            navigate(`/`);
         }
         // Define la URL y realiza la solicitud
         const url = `http://localhost:8021/hotels/${hotelId}`;
@@ -29,6 +55,7 @@ function HotelDetalle() {
             })
             .then(data => {
                 setHotel(data);
+                console.log(data.imagen);
                 // Suponiendo que los amenities vienen en el campo 'amenities' de la respuesta:
                 setAmenities(data.amenities);
             })
@@ -43,14 +70,16 @@ function HotelDetalle() {
 
     const handleReserva = () => {
         const url = `http://localhost:8020/reservas`;
-        const userId = 1;
+
+        const fechaDesdeISO = convertirAFechaISO(fechaDesde);
+        const fechaHastaISO = convertirAFechaISO(fechaHasta);
 
         // Creamos el cuerpo de la solicitud
         const reserva = {
-            user_id: userId,
+            user_id: parseInt(userId),
             hotel_id: hotelId,
-            fecha_ingreso: fechaDesde,
-            fecha_egreso: fechaHasta
+            fecha_ingreso: fechaDesdeISO,
+            fecha_egreso: fechaHastaISO
         };
 
         fetch(url, {
@@ -88,7 +117,7 @@ function HotelDetalle() {
                 <p className="nombre-hotel1">
                     <strong>{hotel.name}</strong>
                 </p>
-                <img src={`../Imagenes/${hotel.imagen}.jpg`} alt={props.nombreHotel} />
+                <img src={`../../../../imagenes/${hotel.imagen}`} />
                 <p className="cantidad-piezas">
                     Habitaciones: {hotel.cantHabitaciones}
                 </p>

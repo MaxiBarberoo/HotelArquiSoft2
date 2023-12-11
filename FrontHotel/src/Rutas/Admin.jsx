@@ -40,6 +40,7 @@ function Admin() {
                 const sortedData = data.map(stat => ({ ...stat, isSelected: false }))
                     .sort((a, b) => a.Name.localeCompare(b.Name));
                 setEstadisticas(sortedData);
+                setEliminando(false);
             })
             .catch(error => {
                 console.error("Error al obtener estadísticas:", error);
@@ -80,23 +81,33 @@ function Admin() {
             },
             body: JSON.stringify({ servicio })
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log(`Servicio ${servicio} escalado:`, data);
-            setTimeout(() => {
-                cargarEstadisticas();
-                setEscalando(false); // Finaliza el proceso de escalamiento
-            }, 30000);
-        })
-        .catch(error => {
-            console.error(`Error al escalar el servicio ${servicio}:`, error);
-            setEscalando(false); // Asegura finalizar el proceso de escalamiento incluso si hay un error
-        });
+            .then(response => response.json())
+            .then(data => {
+                console.log(`Servicio ${servicio} escalado:`, data);
+                setTimeout(() => {
+                    cargarEstadisticas();
+                    setEscalando(false); // Finaliza el proceso de escalamiento
+                }, 30000);
+            })
+            .catch(error => {
+                console.error(`Error al escalar el servicio ${servicio}:`, error);
+                setEscalando(false); // Asegura finalizar el proceso de escalamiento incluso si hay un error
+            });
+    };
+
+    const handleCerrarSesion = () => {
+        localStorage.removeItem('usuarioValidado');
+        navigate('/');
     };
 
     return (
         <div>
             <Header />
+            <div className="header-right">
+                <button className="boton-cerrar-sesion" onClick={handleCerrarSesion}>
+                    Cerrar sesión
+                </button>
+            </div>
             <h2>Módulo de administrador</h2>
             <table className="admin-table">
                 <thead>
@@ -127,26 +138,31 @@ function Admin() {
                 </tbody>
             </table>
 
-            <button className="boton-borrar-contenedores" onClick={handleDeleteSelectedContainers}>
-                Borrar contenedores seleccionados
-            </button>
+            <div className="contenedor-botones">
+                <button className="botones" onClick={handleDeleteSelectedContainers}>
+                    Borrar contenedores seleccionados
+                </button>
+            </div>
 
-            {eliminando && <div>Eliminando contenedor...</div>}
+            {eliminando && <div className="mensajes">Eliminando contenedor...</div>}
 
             <div className="scalable-services-section">
                 <h3>Servicios Escalables</h3>
-                {escalando && <div>Escalando servicio...</div>}
-                <ul>
-                    {serviciosEscalables.map(servicio => (
-                        <li key={servicio}>
-                            {servicio}
-                            <button onClick={() => handleScaleService(servicio)}>Escalar</button>
-                        </li>
-                    ))}
-                </ul>
+                {escalando && <div className="mensajes">Escalando servicio...</div>}
+                <table className="tabla-servicios">
+                    <tbody>
+                        {serviciosEscalables.map(servicio => (
+                            <tr key={servicio}>
+                                <td>{servicio}</td>
+                                <td>
+                                    <button className="botones" onClick={() => handleScaleService(servicio)}>Escalar</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
-            
         </div>
     );
 }

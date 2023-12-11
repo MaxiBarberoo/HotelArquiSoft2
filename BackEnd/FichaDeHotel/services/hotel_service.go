@@ -23,7 +23,7 @@ func generateImagenURL() string {
 	var urlImagen string
 
 	numero := strconv.Itoa(numImagen)
-	urlImagen = "FrontHotel/imagenes/" + numero + ".jpg"
+	urlImagen = numero + ".jpg"
 	numImagen++
 
 	return urlImagen

@@ -80,9 +80,21 @@
 }
 
 .boton-cerrar-sesion {
-  background-color: white;
-  color: red;
-  padding: 5px 10px;
-  border: none;
-  cursor: pointer;
+  padding: 10px 20px;
+  background-color: #ff4b2b; /* Color de fondo */
+  color: white; /* Color del texto */
+  border-radius: 5px; /* Bordes redondeados */
+  border: 1px solid transparent; /* Borde transparente */
+  cursor: pointer; /* Cursor en forma de mano al pasar sobre el botón */
+  font-size: 14px; /* Tamaño del texto */
+  font-weight: bold; /* Negrita para el texto */
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Transición suave de colores */
+  position: absolute; /* Posición absoluta */
+  top: 20px; /* Distancia desde la parte superior */
+  right: 20px; /* Distancia desde la derecha */
+}
+
+.boton-cerrar-sesion:hover {
+  background-color: #d33b2c; /* Color de fondo al pasar el cursor */
+  color: #fff; /* Color del texto al pasar el cursor */
 }

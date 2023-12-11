@@ -1,69 +1,111 @@
-  .admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .admin-table th, .admin-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .admin-table th {
-    background-color: #ff0000; /* Fondo rojo para las celdas del encabezado */
-    color: #fff; /* Texto blanco para las celdas del encabezado */
-  }
-  
-  .admin-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  .admin-table tr:hover {
-    background-color: #e5e5e5;
-  }
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
 
-  .scalable-services-section {
-    margin-top: 20px;
-  }
-  
-  .scalable-services-section h3 {
-    color: #ff0000; /* Color rojo para el subtítulo */
-  }
-  
-  .scalable-services-section button {
-    background-color: #ff0000; /* Fondo rojo para el botón */
-    color: #fff; /* Texto blanco para el botón */
-    padding: 8px;
-    margin-bottom: 10px;
-    cursor: pointer;
-  }
-  
-  .scalable-services-section ul {
-    list-style-type: none; /* Quita los estilos de la lista */
-    padding: 0;
-  }
-  
-  .scalable-services-section li {
-    background-color: #f9f9f9; /* Fondo gris claro para los elementos de la lista */
-    padding: 8px;
-    margin-bottom: 5px;
-  }
-  
-  .boton-borrar-contenedores {
-    background-color: #ff0000; /* Fondo rojo para el botón */
-    color: #fff; /* Texto blanco para el botón */
-    padding: 10px 15px; /* Ajusta el relleno del botón según sea necesario */
-    margin: 20px auto; /* Aumenta el margen superior y centra el botón */
-    display: block; /* Hace que el botón sea un bloque para permitir el centrado */
-    cursor: pointer;
-    border: none; /* Elimina el borde del botón */
-    border-radius: 5px; /* Agrega esquinas redondeadas */
-    transition: background-color 0.3s ease; /* Efecto de transición en el cambio de color de fondo */
-    width: fit-content; /* Ajusta el ancho del botón al contenido */
+.admin-table th, .admin-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
 
-    /* Estilo cuando el mouse pasa sobre el botón */
-    &:hover {
-        background-color: #cc0000; /* Color de fondo ligeramente más oscuro al pasar el mouse */
-    }
+.admin-table th {
+  background-color: #ff0000; /* Fondo rojo para las celdas del encabezado */
+  color: #fff; /* Texto blanco para las celdas del encabezado */
+}
+
+.admin-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.admin-table tr:hover {
+  background-color: #e5e5e5;
+}
+
+.scalable-services-section {
+  text-align: center;
+  margin: 20px;
+}
+
+.scalable-services-section h3 {
+  color: black; /* Color negro para el subtítulo */
+}
+
+/* Estilos para la tabla de servicios escalables */
+.tabla-servicios {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tabla-servicios td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.tabla-servicios tr:last-child td {
+  border-bottom: none;
+}
+
+.contenedor-botones {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.botones {
+  border-radius: 20px;
+  border: 1px solid #FF4B2B;
+  background-color: #FF4B2B;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+  margin-top: 20px;
+}
+
+.botones:active {
+  transform: scale(0.95);
+}
+
+.botones:focus {
+  outline: none;
+}
+
+.botones:hover {
+  background-color: #7f1818;
+  color: #ffffffd8;
+}
+
+.mensajes {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+}
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.boton-cerrar-sesion {
+  padding: 10px 20px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.boton-cerrar-sesion:hover {
+  background-color: #cc0000;
 }

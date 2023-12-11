@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../Componentes/Header";
 import HotelesR from '../Componentes/HotelesR'
 import DatePicker from "react-datepicker"
@@ -11,6 +11,7 @@ function Home() {
   const [fechaDesde, setFechaDesde] = useState(null);
   const [fechaHasta, setFechaHasta] = useState(null);
   const [ciudad, setCiudad] = useState(null);
+  const { userId } = useParams();
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
   const navigate = useNavigate();
   const usuarioValidado = localStorage.getItem('usuarioValidado');
@@ -63,11 +64,9 @@ function Home() {
     }
   };
 
-  const handleVerDetallesClick = () => {
-    navigate(
-      `/detalle/${props.hotelId}/${props.fechaDesde}/${props.fechaHasta}`
-    );
-  }
+  const handleVerDetallesClick = (hotelId) => {
+    navigate(`/detalle/${hotelId}/${fechaDesde}/${fechaHasta}/${userId}`);
+  };
 
   const handleCerrarSesion = () => {
     localStorage.removeItem('usuarioValidado');
@@ -76,7 +75,7 @@ function Home() {
 
   useEffect(() => {
     if (!usuarioValidado) {
-      navigate(`/home`);
+      navigate(`/`);
     }
   }, []);
 
@@ -118,7 +117,9 @@ function Home() {
                   fechaHasta={fechaHasta}
                   imagen={hotel.imagen}
                 />
-                <button onClick={handleVerDetallesClick} className="boton-detalles">Ver detalles</button>
+                <button onClick={() => handleVerDetallesClick(hotel.id)} className="boton-detalles">
+                  Ver detalles
+                </button>
               </div>
             ))
           ) : (

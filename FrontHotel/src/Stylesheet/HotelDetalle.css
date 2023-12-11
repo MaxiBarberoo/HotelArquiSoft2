@@ -18,6 +18,13 @@ h2 {
   padding: 20px; /* Añadir algo de padding */
 }
 
+.contenedor-hoteles img {
+  max-width: 100%; /* Asegura que la imagen no sea más ancha que el contenedor */
+  height: auto; /* Mantiene la proporción de la imagen */
+  display: block; /* Alinea la imagen correctamente */
+  margin: 0 auto; /* Centra la imagen si es más pequeña que el contenedor */
+}
+
 .boton-reservar {
   display: flex;
   align-items: center;
