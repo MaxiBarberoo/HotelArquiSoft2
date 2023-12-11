@@ -50,3 +50,20 @@
     margin-bottom: 5px;
   }
   
+  .boton-borrar-contenedores {
+    background-color: #ff0000; /* Fondo rojo para el botón */
+    color: #fff; /* Texto blanco para el botón */
+    padding: 10px 15px; /* Ajusta el relleno del botón según sea necesario */
+    margin: 20px auto; /* Aumenta el margen superior y centra el botón */
+    display: block; /* Hace que el botón sea un bloque para permitir el centrado */
+    cursor: pointer;
+    border: none; /* Elimina el borde del botón */
+    border-radius: 5px; /* Agrega esquinas redondeadas */
+    transition: background-color 0.3s ease; /* Efecto de transición en el cambio de color de fondo */
+    width: fit-content; /* Ajusta el ancho del botón al contenido */
+
+    /* Estilo cuando el mouse pasa sobre el botón */
+    &:hover {
+        background-color: #cc0000; /* Color de fondo ligeramente más oscuro al pasar el mouse */
+    }
+}
