@@ -142,7 +142,7 @@ func (a autoScalingService) ScaleService(servicio string) (int, e.ApiError) {
 
 	currQty := len(ids)
 
-	scaleCommand := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "up", "-d", "--scale", fmt.Sprintf("%s=%d", servicio, currQty+1))
+	scaleCommand := exec.Command("docker-compose", "-f", "/Users/mussa/Documents/Universidad/Arquitectura_de_Software_II/HotelArquiSoft2/docker-compose.yml", "scale", fmt.Sprintf("%s=%d", servicio, currQty+1))
 
 	er := scaleCommand.Run()
 	if er != nil {
