@@ -1,10 +1,10 @@
 package app
 
 import (
+	log "github.com/sirupsen/logrus"
 	amadeusController "urd/controller/amadeus"
 	reservaController "urd/controller/reserva"
 	userController "urd/controller/user"
-	log "github.com/sirupsen/logrus"
 )
 
 func mapUrls() {
@@ -21,6 +21,5 @@ func mapUrls() {
 	router.GET("/reservas/reservauser/:user_id", reservaController.GetReservasByUser)
 	router.POST("/amadeus/mapping", amadeusController.CreateMapping)
 	router.POST("/amadeus/availability", amadeusController.CheckAvailability)
-	router.DELETE("/reservas/:id", reservaController.DeleteReserva)
 	log.Info("Finishing mappings configurations")
 }

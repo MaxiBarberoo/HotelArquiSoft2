@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"urd/dto"
-	service "urd/services"
 	"net/http"
 	"strconv"
+	"urd/dto"
+	service "urd/services"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -72,19 +72,4 @@ func GetReservasByUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, reservasDto)
-}
-
-func DeleteReserva(c *gin.Context) {
-	reservaId, _ := strconv.Atoi(c.Param("reserva_id"))
-
-	err := service.ReservaService.DeleteReserva(reservaId)
-
-	if err != nil {
-		c.JSON(err.Status(), err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"Deleted": "true",
-	})
 }

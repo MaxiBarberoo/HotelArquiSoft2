@@ -1,7 +1,6 @@
 package clients
 
 import (
-	e "urd/Utils"
 	"urd/model"
 
 	"github.com/jinzhu/gorm"
@@ -17,7 +16,6 @@ type ReservaClientInterface interface {
 	GetReservas() model.Reservas
 	InsertReserva(reserva model.Reserva) model.Reserva
 	GetReservasByUser(userId int) model.Reservas
-	DeleteReserva(userId int) e.ApiError
 }
 
 var (
@@ -57,12 +55,4 @@ func (c *reservaClient) GetReservasByUser(userId int) model.Reservas {
 	Db.Where("user_id = ?", userId).Find(&reservas)
 	log.Debug("Reservas: ", reservas)
 	return reservas
-}
-
-func (c *reservaClient) DeleteReserva(reservaId int) e.ApiError {
-	result := Db.Table("reservas").Where("reserva_id = ?", reservaId).Delete(nil)
-	if result.Error != nil {
-		return e.NewBadRequestApiError("Error al eliminar la reserva")
-	}
-	return nil
 }

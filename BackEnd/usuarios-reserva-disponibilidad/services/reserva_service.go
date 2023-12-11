@@ -14,7 +14,6 @@ type reservaServiceInterface interface {
 	GetReservas() (dto.ReservasDto, e.ApiError)
 	InsertReserva(reservaDto dto.ReservaDto) (dto.ReservaDto, e.ApiError)
 	GetReservasByUser(userId int) (dto.ReservasDto, e.ApiError)
-	DeleteReserva(userId int) e.ApiError
 }
 
 var (
@@ -112,13 +111,4 @@ func (s *reservaService) GetReservasByUser(userId int) (dto.ReservasDto, e.ApiEr
 	}
 
 	return reservasDto, nil
-}
-
-func (s *reservaService) DeleteReserva(reservaId int) e.ApiError {
-	err := reservaClient.ReservaClient.DeleteReserva(reservaId)
-	if err != nil {
-		return e.NewBadRequestApiError("Error al eliminar la reserva")
-	}
-
-	return nil
 }
