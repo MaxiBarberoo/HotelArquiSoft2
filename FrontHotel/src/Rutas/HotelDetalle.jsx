@@ -88,6 +88,7 @@ function HotelDetalle() {
                 <p className="nombre-hotel1">
                     <strong>{hotel.name}</strong>
                 </p>
+                <img src={`../Imagenes/${hotel.imagen}.jpg`} alt={props.nombreHotel} />
                 <p className="cantidad-piezas">
                     Habitaciones: {hotel.cantHabitaciones}
                 </p>

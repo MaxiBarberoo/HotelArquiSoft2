@@ -17,6 +17,7 @@ function Admin() {
         }
 
         cargarEstadisticas();
+        setEliminando(false); // Cambiar estado eliminando a false después de cargar estadísticas
 
         fetch("http://localhost:8059/services")
             .then(response => response.json())
@@ -39,11 +40,9 @@ function Admin() {
                 const sortedData = data.map(stat => ({ ...stat, isSelected: false }))
                     .sort((a, b) => a.Name.localeCompare(b.Name));
                 setEstadisticas(sortedData);
-                setEliminando(false); // Cambiar estado eliminando a false después de cargar estadísticas
             })
             .catch(error => {
                 console.error("Error al obtener estadísticas:", error);
-                setEliminando(false); // Asegurarse de cambiar el estado incluso si hay un error
             });
     };
 
@@ -73,7 +72,7 @@ function Admin() {
     };
 
     const handleScaleService = (servicio) => {
-        setEscalando(true);
+        setEscalando(true); // Inicia el proceso de escalamiento
         fetch("http://localhost:8059/scale", {
             method: 'POST',
             headers: {
@@ -86,12 +85,12 @@ function Admin() {
             console.log(`Servicio ${servicio} escalado:`, data);
             setTimeout(() => {
                 cargarEstadisticas();
-                setEscalando(false); // Finalizar el proceso de escalamiento
-            }, 5000);
+                setEscalando(false); // Finaliza el proceso de escalamiento
+            }, 30000);
         })
         .catch(error => {
             console.error(`Error al escalar el servicio ${servicio}:`, error);
-            setEscalando(false); // Asegurarse de cambiar el estado incluso si hay un error
+            setEscalando(false); // Asegura finalizar el proceso de escalamiento incluso si hay un error
         });
     };
 
@@ -136,17 +135,18 @@ function Admin() {
 
             <div className="scalable-services-section">
                 <h3>Servicios Escalables</h3>
+                {escalando && <div>Escalando servicio...</div>}
                 <ul>
                     {serviciosEscalables.map(servicio => (
                         <li key={servicio}>
                             {servicio}
-                            <button onClick={() => handleScaleService(servicio)} disabled={escalando}>Escalar</button>
+                            <button onClick={() => handleScaleService(servicio)}>Escalar</button>
                         </li>
                     ))}
                 </ul>
             </div>
 
-            {escalando && <div>Escalando servicio...</div>}
+            
         </div>
     );
 }

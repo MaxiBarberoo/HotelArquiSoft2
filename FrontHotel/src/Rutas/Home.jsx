@@ -116,6 +116,7 @@ function Home() {
                   nombreHotel={hotel.name}
                   fechaDesde={fechaDesde}
                   fechaHasta={fechaHasta}
+                  imagen={hotel.imagen}
                 />
                 <button onClick={handleVerDetallesClick} className="boton-detalles">Ver detalles</button>
               </div>
