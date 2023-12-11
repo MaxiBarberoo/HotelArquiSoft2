@@ -11,7 +11,5 @@ func main() {
 	for _, servicio := range servicios {
 		go service.AutoScalingService.AutoScaleContinuously(servicio)
 	}
-
 	app.StartRoute()
-
 }
