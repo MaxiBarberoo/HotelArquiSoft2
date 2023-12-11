@@ -23,6 +23,7 @@ func UpdateHotel(hotelDto dto.HotelDto) e.ApiError {
 				"cantHabitaciones": hotelDto.CantHabitaciones,
 				"descripcion":      hotelDto.Desc,
 				"amenities":        hotelDto.Amenities,
+				"imagen":           hotelDto.Imagen,
 			},
 		},
 	}
@@ -142,6 +143,16 @@ func GetHotelsByDateAndCity(searchDto dto.SearchDto) (dto.HotelsDto, e.ApiError)
 		} else {
 			// Maneja el caso en que el tipo no sea el esperado
 			fmt.Println("Descripcion is not a string!")
+			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
+		}
+
+		if val, ok := hotel["imagen"].([]interface{}); ok {
+			if str, ok := val[0].(string); ok {
+				hotelDto.Imagen = str
+			}
+		} else {
+			// Maneja el caso en que el tipo no sea el esperado
+			fmt.Println("Imagen is not a string!")
 			return nil, e.NewBadRequestApiError("Error con un tipo de dato de solr")
 		}
 

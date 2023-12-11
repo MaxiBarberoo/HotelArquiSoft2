@@ -7,6 +7,7 @@ type HotelDto struct {
 	CantHabitaciones int      `json:"cantHabitaciones"`
 	Desc             string   `json:"descripcion"`
 	Amenities        []string `json:"amenities"`
+	Imagen           string   `json:"imagen"`
 	Availability     bool     `json:"availability"`
 }
 type HotelsDto []HotelDto

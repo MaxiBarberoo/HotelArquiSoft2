@@ -68,6 +68,10 @@ func UpdateHotel(hotel model.Hotel) (model.Hotel, error) {
 		update["ciudad"] = hotel.Ciudad
 	}
 
+	if hotel.Imagen != "" {
+		update["imagen"] = hotel.Imagen
+	}
+
 	_, err := Db.Collection("hotels").UpdateOne(context.TODO(), filter, bson.M{"$set": update})
 	if err != nil {
 		return hotel, err

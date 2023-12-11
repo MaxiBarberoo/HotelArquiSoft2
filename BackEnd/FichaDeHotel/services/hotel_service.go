@@ -1,21 +1,33 @@
 package services
 
 import (
-	"fmt"
-	"context"
 	"bytes"
+	"context"
 	"encoding/json"
 	e "fichadehotel/Utils"
 	hotelClient "fichadehotel/clients/hotel"
 	"fichadehotel/dto"
 	"fichadehotel/model"
+	"fmt"
 	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
+var numImagen = 1
+
+func generateImagenURL() string {
+	var urlImagen string
+
+	numero := strconv.Itoa(numImagen)
+	urlImagen = "FrontHotel/imagenes/" + numero + ".jpg"
+	numImagen++
+
+	return urlImagen
+}
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -94,6 +106,7 @@ func (s *hotelService) GetHotelById(id string) (dto.HotelDto, e.ApiError) {
 	hotelDto.Desc = hotel.Descripcion
 	hotelDto.Amenities = hotel.Amenities
 	hotelDto.Ciudad = hotel.Ciudad
+	hotelDto.Imagen = hotel.Imagen
 
 	return hotelDto, nil
 }
@@ -138,6 +151,13 @@ func (s *hotelService) InsertHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 		return hotelDto, e.NewBadRequestApiError("Error al llamar al servicio de mapeo de ids")
 	}
 
+	var updateImagen dto.HotelDto
+	updateImagen.Id = hotelDto.Id
+	updateImagen.Imagen = generateImagenURL()
+	s.UpdateHotel(updateImagen)
+
+	hotelDto.Imagen = updateImagen.Imagen
+
 	return hotelDto, nil
 }
 
@@ -155,6 +175,7 @@ func (s *hotelService) UpdateHotel(hotelDto dto.HotelDto) (dto.HotelDto, e.ApiEr
 	hotel.ID = ID
 	hotel.Amenities = hotelDto.Amenities
 	hotel.Ciudad = hotelDto.Ciudad
+	hotel.Imagen = hotelDto.Imagen
 
 	hotel, err = hotelClient.UpdateHotel(hotel)
 	if err != nil {
